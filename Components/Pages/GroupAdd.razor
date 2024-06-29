@@ -80,6 +80,7 @@
             return;
         }
 
+        Order!.PaymentStatus = PaymentStatus.Unpaid;
         Order!.Group = group;
         context.Add(Order!);
         context.SaveChanges();

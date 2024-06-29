@@ -1,0 +1,127 @@
+@page "/group/{GroupSlug}/finance"
+
+@using GroupOrder.Data
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+@inject IDbContextFactory<GroupContext> DbFactory
+@inject NavigationManager nm
+
+<PageTitle>Mampf.Link @Group?.GroupName Finances</PageTitle>
+
+@if (Group != null)
+{
+    <h1>Finance Overview: @Group?.GroupName</h1>
+    
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Payment Status
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (Order order in Group!.Orders)
+        {
+            <tr>
+                <td>
+                    @order.Name
+                </td>
+                <td>
+                    @order.getPrice()€
+                </td>
+                <td style="padding-top: 3px; padding-bottom: 0">
+                    <InputSelect class="form-select form-select-sm" style="max-width: 200px" @bind-Value="@order.PaymentStatus">
+                        <option value="@PaymentStatus.Unpaid">Unpaid</option>
+                        <option value="@PaymentStatus.PaymentPending">Payment Pending</option>
+                        <option value="@PaymentStatus.Paid">Paid</option>
+                    </InputSelect>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    <button class="btn btn-primary" @onclick="Save">Save changes</button>
+}
+
+@code {
+    
+    private Group? Group { get; set; }
+
+    private bool Loading { get; set; } = false;
+    private bool NotFound { get; set; } = false;
+    
+    [Parameter]
+    public string? GroupSlug { get; set; }
+    
+    private string? AdminCode { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        _context = DbFactory.CreateDbContext();
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadGroupAsync();
+        await base.OnParametersSetAsync();
+    }
+
+    GroupContext? _context;
+    
+    // Loads the contact.
+    private async Task LoadGroupAsync()
+    {
+        if (nm.Uri.Contains("?") && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code))
+        {
+            AdminCode = code;
+        }
+        else
+        {
+            NotFound = true;
+            return;
+        }
+        
+        if (Loading)
+        {
+            return; //avoid concurrent requests.
+        }
+
+        Group = null;
+        Loading = true;
+        
+        if (_context!.Groups is not null)
+        {
+            Group = await _context!.Groups
+                .Include(group => group.Orders)
+                .SingleOrDefaultAsync(
+                    c => c.GroupSlug == GroupSlug && c.AdminCode == AdminCode);
+
+            if (Group is null)
+            {
+                NotFound = true;
+            }
+        }
+
+        Loading = false;
+    }
+
+    private async void Save()
+    {
+        if (Group == null) return;
+        if (Group.AdminCode != AdminCode) return; // this theoretically should not happen
+        await _context!.SaveChangesAsync();
+    }
+    
+}

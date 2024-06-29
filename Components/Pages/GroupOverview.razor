@@ -42,12 +42,12 @@
                 @order.Food
             </td>
             <td>
-                @getPrice(order)€
+                @order.getPrice()€
             </td>
             <td>
-                @if (Group.PaypalUsername != null)
+                @if (!string.IsNullOrEmpty(Group.PaypalUsername))
                 {
-                <a style="text-decoration: none" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@getPrice(order)">💳</a>
+                <a style="text-decoration: none" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()">💳</a>
                 }
             </td>
         </tr>
@@ -100,11 +100,6 @@
         }
 
         Loading = false;
-    }
-
-    private String getPrice(Order order)
-    {
-        return (order.Price / 100) + "." + System.String.Format("{0:D2}", order.Price % 100);
     }
     
 }

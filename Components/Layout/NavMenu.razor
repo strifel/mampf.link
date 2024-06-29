@@ -38,6 +38,14 @@ protected override void OnInitialized()
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Add
             </NavLink>
         </div>
+        @if (nm.Uri.Contains("admin="))
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@FinanceLink()" Match="NavLinkMatch.All">
+                    <span class="bi bi-bank-nav-menu" aria-hidden="true"></span> Finanzen
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
 
@@ -52,5 +60,10 @@ protected override void OnInitialized()
     private string AddLink()
     {
         return _prefix + "/add" + _suffix;
+    }
+    
+    private string FinanceLink()
+    {
+        return _prefix + "/finance" + _suffix;
     }
 }

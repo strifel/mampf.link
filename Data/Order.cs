@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,4 +21,20 @@ public class Order
     
     [Required]
     public int? Price { get; set; } // in cent
+    
+    [Required]
+    [DefaultValue(PaymentStatus.Unpaid)]
+    public PaymentStatus PaymentStatus { get; set; }
+    
+    public String getPrice()
+    {
+        return (this.Price / 100) + "." + System.String.Format("{0:D2}", this.Price % 100);
+    }
+}
+
+public enum PaymentStatus
+{
+    Unpaid,
+    PaymentPending,
+    Paid
 }

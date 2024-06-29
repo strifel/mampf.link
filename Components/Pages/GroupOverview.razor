@@ -11,6 +11,8 @@
 @if (Group != null)
 {
     <h1>Group Overview: @Group?.GroupName</h1>
+    
+    <p>@Group?.Description</p>
 
     <table class="table">
         <thead>
@@ -23,6 +25,9 @@
             </th>
             <th>
                 Price
+            </th>
+            <th>
+                Actions
             </th>
         </tr>
         </thead>
@@ -37,7 +42,13 @@
                 @order.Food
             </td>
             <td>
-                @(order.Price / 100).@(System.String.Format("{0:D2}", order.Price % 100))€
+                @getPrice(order)€
+            </td>
+            <td>
+                @if (Group.PaypalUsername != null)
+                {
+                <a style="text-decoration: none" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@getPrice(order)">💳</a>
+                }
             </td>
         </tr>
         }
@@ -89,6 +100,11 @@
         }
 
         Loading = false;
+    }
+
+    private String getPrice(Order order)
+    {
+        return (order.Price / 100) + "." + System.String.Format("{0:D2}", order.Price % 100);
     }
     
 }

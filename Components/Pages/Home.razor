@@ -7,22 +7,28 @@
 @inject NavigationManager NavigationManager
 
 
-<PageTitle>Mamp.Link</PageTitle>
+<PageTitle>Mampf.Link</PageTitle>
 
-Welcome to Mamp.Link!<br/>
+Welcome to Mampf.Link!<br/>
 Create a new Group here or use an link to join an existing one.<br/><br/>
 
 
 <form method="post" @onsubmit="Submit" @formname="group-create-form">
-    <AntiforgeryToken />
-    <div>
-        <label>
-            Name:
-            <InputText @bind-Value="Model!.GroupName" />
-        </label>
+    <AntiforgeryToken/>
+    <div class="form-group">
+        <label>Name:</label>
+        <InputText class="form-control" required @bind-Value="Model!.GroupName"/>
     </div>
+    <div class="form-group">
+        <label>Description (optional):</label>
+        <InputTextArea class="form-control" @bind-Value="Model!.Description"/>
+    </div>
+    <div class="form-group">
+        <label>Your Paypal Username (optional):</label>
+        <InputText class="form-control" @bind-Value="Model!.PaypalUsername"/>
+    </div><br/>
     <div>
-        <button type="submit">Submit</button>
+        <button class="btn btn-primary" type="submit">Submit</button>
     </div>
 </form>
 
@@ -38,7 +44,7 @@ Create a new Group here or use an link to join an existing one.<br/><br/>
         Model!.GroupSlug = RandomNumberGenerator.GetHexString(10);
         context.Add(Model);
         context.SaveChanges();
-        
+
         NavigationManager.NavigateTo($"/group/{Model!.GroupSlug}?admin={Model!.AdminCode}");
     }
 

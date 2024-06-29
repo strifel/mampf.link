@@ -48,7 +48,7 @@
     private bool Saved { get; set; } = false;
     
     [Parameter]
-    public string GroupSlug { get; set; }
+    public string? GroupSlug { get; set; }
     
     protected override async Task OnParametersSetAsync()
     {

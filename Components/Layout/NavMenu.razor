@@ -3,19 +3,24 @@
 @code {
 
 string _prefix = "";
+string _suffix = "";
 
 protected override void OnInitialized()
 {
     if (nm.Uri.Contains("group/"))
     {
-        _prefix = "/group/" + nm.ToBaseRelativePath(nm.Uri).Split("/")[1];
+        _prefix = "/group/" + nm.ToBaseRelativePath(nm.Uri).Split("/")[1].Split("?")[0];
+        if (nm.Uri.Contains("?"))
+        {
+            _suffix = "?" + nm.Uri.Split("?")[1];
+        }
     }
 }
 }
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">GroupOrder</a>
+        <a class="navbar-brand" href="">Mampf.Link</a>
     </div>
 </div>
 
@@ -24,10 +29,28 @@ protected override void OnInitialized()
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="@_prefix" Match="NavLinkMatch.All">
+            <NavLink class="nav-link" href="@HomeLink()" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="@AddLink()" Match="NavLinkMatch.All">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Add
             </NavLink>
         </div>
     </nav>
 </div>
 
+
+@code
+{
+    private string HomeLink()
+    {
+        return _prefix + _suffix;
+    }
+    
+    private string AddLink()
+    {
+        return _prefix + "/add" + _suffix;
+    }
+}

@@ -3,6 +3,7 @@ using System;
 using GroupOrder.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroupOrder.Migrations
 {
     [DbContext(typeof(GroupContext))]
-    partial class GroupContextModelSnapshot : ModelSnapshot
+    [Migration("20240629124704_Order")]
+    partial class Order
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
@@ -28,10 +31,6 @@ namespace GroupOrder.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("GroupName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -40,10 +39,6 @@ namespace GroupOrder.Migrations
                     b.Property<string>("GroupSlug")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PaypalUsername")
-                        .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -81,7 +76,7 @@ namespace GroupOrder.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("GroupOrder.Data.Order", b =>

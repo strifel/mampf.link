@@ -1,0 +1,86 @@
+@page "/group/{GroupSlug}/add"
+
+@using GroupOrder.Data
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+@inject IDbContextFactory<GroupContext> DbFactory
+
+<PageTitle>Mampf.Link Add</PageTitle>
+
+<h1>Add Food</h1>
+    
+@if (!Saved)
+{
+    <form method="post" @onsubmit="Submit" @formname="group-create-form">
+        <AntiforgeryToken/>
+        <div class="form-group">
+            <label>
+                Name:
+                <InputText class="form-control" @bind-Value="Order!.Name"/>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                Food:
+                <InputText class="form-control" @bind-Value="Order!.Food"/>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                Price (Euro):
+                <InputNumber step="0.01" placeholder="10.00" class="form-control" @bind-Value="Price"/>
+            </label>
+        </div><br/>
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </form>
+}
+@if (Saved)
+{
+    <h3>Erfolgreich eingetragen.</h3>
+}
+
+@code {
+    
+    private Order? Order { get; set; }
+    private Decimal? Price { get; set; }
+
+    private bool Saved { get; set; } = false;
+    
+    [Parameter]
+    public string GroupSlug { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+    
+    protected override void OnInitialized() => Order ??= new();
+    
+    
+    private async void Submit()
+    {
+        if (Price == null | Order!.Name == null | Order!.Food == null)
+        {
+            return;
+        }
+        Order!.Price = (int)(Price! * 100);
+        
+        using var context = DbFactory.CreateDbContext();
+        
+        Group? group = await context.Groups
+            .SingleOrDefaultAsync(
+                c => c.GroupSlug == GroupSlug);
+
+        if (group is null)
+        {
+            return;
+        }
+
+        Order!.Group = group;
+        context.Add(Order!);
+        context.SaveChanges();
+        Saved = true;
+    }
+    
+}

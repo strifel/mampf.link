@@ -1,0 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+
+namespace GroupOrder.Data;
+
+[Index(nameof(GroupSlug), IsUnique = true)]
+public class Group
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(100, ErrorMessage = "Name can not exceed 100 characters.")]
+    public string? GroupName { get; set; }
+
+    [Required]
+    [StringLength(100, ErrorMessage = "Slug cannot exceed 100 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Slug may only contain a-z, numbers and dashes.")]
+    public string? GroupSlug { get; set; }
+    
+    [Required]
+    [StringLength(15, ErrorMessage = "Code cannot exceed 15 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Slug may only contain a-z and numbers.")]
+    public string? AdminCode { get; set; }
+    
+    
+}

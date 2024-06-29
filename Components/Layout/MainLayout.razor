@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@inherits LayoutComponentBase
+@inject NavigationManager nm
+
+@code {
+
+    bool _showSidebar = false;
+
+    protected override void OnInitialized()
+    {
+        if (nm.Uri.Contains("group/"))
+        {
+            _showSidebar = true;
+        }
+    }
+}
+
+<div class="page">
+    
+    @if (_showSidebar)
+    {
+        <div class="sidebar">
+            <NavMenu/>
+        </div>
+    }
+
+
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>

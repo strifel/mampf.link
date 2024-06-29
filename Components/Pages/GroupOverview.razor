@@ -1,0 +1,77 @@
+﻿@page "/group/{GroupSlug}"
+@using GroupOrder.Data
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+@inject IDbContextFactory<GroupContext> DbFactory
+
+<PageTitle>Counter</PageTitle>
+
+@if (Group != null)
+{
+    <h1>Group Overview: @Group?.GroupName</h1>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Food
+            </th>
+            <th>
+                Price
+            </th>
+        </tr>
+        </thead>
+    </table>
+}
+
+@code {
+    
+    private Group? Group { get; set; }
+
+    private bool Loading { get; set; } = false;
+    private bool NotFound { get; set; } = false;
+    
+    [Parameter]
+    public string GroupSlug { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadGroupAsync();
+        await base.OnParametersSetAsync();
+    }
+    
+    
+    // Loads the contact.
+    private async Task LoadGroupAsync()
+    {
+        if (Loading)
+        {
+            return; //avoid concurrent requests.
+        }
+
+        Group = null;
+        Loading = true;
+
+        using var context = DbFactory.CreateDbContext();
+
+        if (context.Groups is not null)
+        {
+            Group = await context.Groups
+                .AsNoTracking()
+                .SingleOrDefaultAsync(
+                    c => c.GroupSlug == GroupSlug);
+
+            if (Group is null)
+            {
+                NotFound = true;
+            }
+        }
+
+        Loading = false;
+    }
+    
+}

@@ -9,28 +9,46 @@
 
 <PageTitle>Mampf.Link</PageTitle>
 
-Welcome to Mampf.Link!<br/>
-Create a new Group here or use an link to join an existing one.<br/><br/>
-
-
-<form method="post" @onsubmit="Submit" @formname="group-create-form">
-    <AntiforgeryToken/>
-    <div class="form-group">
-        <label>Name:</label>
-        <InputText class="form-control" required @bind-Value="Model!.GroupName"/>
-    </div>
-    <div class="form-group">
-        <label>Description (optional):</label>
-        <InputTextArea class="form-control" @bind-Value="Model!.Description"/>
-    </div>
-    <div class="form-group">
-        <label>Your Paypal Username (optional):</label>
-        <InputText class="form-control" @bind-Value="Model!.PaypalUsername"/>
-    </div><br/>
-    <div>
-        <button class="btn btn-primary" type="submit">Submit</button>
-    </div>
-</form>
+<main class="form-signin w-100 m-auto">
+    <form method="post" @onsubmit="Submit" @formname="group-create-form">
+        <h1 class="h3 mb-3 fw-normal">Welcome to mampf.link</h1>
+        <p>Create a new Group here or use an link to join an existing one.</p><br/><br/>
+        <AntiforgeryToken/>
+        <div class="form-floating">
+            <InputText 
+                id="group_name" 
+                placeholder=" " 
+                class="form-control" 
+                required 
+                @bind-Value="Model!.GroupName"
+                style="border-bottom-left-radius: 0;border-bottom-right-radius: 0;"
+            />
+            <label for="group_name">Group-Name</label>
+        </div>
+        <div class="form-floating">
+            <InputTextArea 
+                placeholder=" " 
+                id="group_description" 
+                class="form-control" 
+                @bind-Value="Model!.Description"
+                style="min-height: 150px; border-radius: 0"
+            />
+            <label for="group_description">Description (optional):</label>
+        </div>
+        <div class="form-floating">
+            <InputText
+                placeholder=" "
+                id="paypal_username"
+                class="form-control"
+                @bind-Value="Model!.PaypalUsername"
+                style="border-top-left-radius: 0;border-top-right-radius: 0;"
+            />
+            <label for="paypal_username">Your Paypal Username (optional):</label>
+        </div><br/>
+        <button class="btn btn-primary" type="submit">Create Group</button>
+        <p class="mt-5 mb-3 text-body-secondary"><a href="https://github.com/strifel/mampf.link">Code on Github</a></p>
+    </form>
+</main>
 
 @code {
     [SupplyParameterFromForm] public Group? Model { get; set; }

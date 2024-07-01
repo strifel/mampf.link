@@ -70,7 +70,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="() => { Paid(showPaidModal.Id); showPaidModal = null; }">Yes</button>
-                        <button type="button" class="btn btn-secondary"data-bs-dismiss="modal" data-bs-dismiss="modal" @onclick="() => showPaidModal = null">Not yet</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="() => showPaidModal = null">Not yet</button>
                     </div>
             </div>
         </div>
@@ -89,7 +89,7 @@
     [Parameter]
     public string? GroupSlug { get; set; }
 
-    public Order Order { get; set; }
+    public Order? Order { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {

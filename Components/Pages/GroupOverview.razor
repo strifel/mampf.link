@@ -47,7 +47,7 @@
             <td>
                 @if (!string.IsNullOrEmpty(Group.PaypalUsername))
                 {
-                <a style="text-decoration: none" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()">💳</a>
+                    <a href="" style="text-decoration: none" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</a>
                 }
             </td>
         </tr>
@@ -56,16 +56,41 @@
     </table>
 }
 
+@if (showPaidModal != null)
+{
+    <div id="paidModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Already paid?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                    <div class="modal-body">
+                        <p>Have you sent @showPaidModal.getPrice()€?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="() => { Paid(showPaidModal.Id); showPaidModal = null; }">Yes</button>
+                        <button type="button" class="btn btn-secondary"data-bs-dismiss="modal" data-bs-dismiss="modal" @onclick="() => showPaidModal = null">Not yet</button>
+                    </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     
     private Group? Group { get; set; }
 
     private bool Loading { get; set; } = false;
     private bool NotFound { get; set; } = false;
+
+    private Order? showPaidModal;
     
     [Parameter]
     public string? GroupSlug { get; set; }
-    
+
+    public Order Order { get; set; }
+
     protected override async Task OnParametersSetAsync()
     {
         await LoadGroupAsync();
@@ -100,6 +125,17 @@
         }
 
         Loading = false;
+    }
+
+    private void Paid(int orderId)
+    {
+        using var context = DbFactory.CreateDbContext();
+        Order order = context.Orders.Find(orderId)!;
+        if (order.PaymentStatus == PaymentStatus.Unpaid)
+        {
+            order.PaymentStatus = PaymentStatus.PaymentPending;
+            context.SaveChanges();
+        }
     }
     
 }

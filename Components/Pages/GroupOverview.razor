@@ -49,7 +49,7 @@
             <td>
                 @if (!string.IsNullOrEmpty(Group.PaypalUsername))
                 {
-                    <a href="" style="text-decoration: none" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</a>
+                    <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
                 }
             </td>
         </tr>

@@ -5,12 +5,14 @@
 @rendermode InteractiveServer
 
 @inject IDbContextFactory<GroupContext> DbFactory
+@inject NavigationManager nm
 
 <PageTitle>Mampf.Link @Group?.GroupName</PageTitle>
 
 @if (Group != null)
 {
     <h1>Group Overview: @Group?.GroupName</h1>
+    <p>Link to Group: <a href="@nm.BaseUri.ToLower()group/@Group!.GroupSlug">@nm.BaseUri.ToLower()group/@Group!.GroupSlug</a></p>
     
     <p>@Group?.Description</p>
 

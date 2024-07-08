@@ -1,6 +1,7 @@
 ﻿@page "/group/{GroupSlug}"
 
 @using GroupOrder.Data
+@using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 
@@ -51,6 +52,10 @@
                 {
                     <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
                 }
+                @if (AdminCode != null && AdminCode == Group.AdminCode)
+                {
+                    <span style="cursor: pointer" @onclick="() => Delete(order.Id)">🗑</span>
+                }
             </td>
         </tr>
         }
@@ -86,6 +91,8 @@
     private bool Loading { get; set; } = false;
     private bool NotFound { get; set; } = false;
 
+    private String? AdminCode;
+
     private Order? showPaidModal;
     
     [Parameter]
@@ -97,12 +104,27 @@
     {
         await LoadGroupAsync();
         await base.OnParametersSetAsync();
+        nm.LocationChanged += HandleLocationChanged;
     }
-    
-    
+
+    void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
+    {
+        if (nm.Uri.Contains("?") && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code))
+        {
+            AdminCode = code;
+        }
+        else
+        {
+            AdminCode = null;
+        }
+        StateHasChanged();
+    }
+
     // Loads the contact.
     private async Task LoadGroupAsync()
     {
+        HandleLocationChanged(null, null);
+        
         if (Loading)
         {
             return; //avoid concurrent requests.
@@ -138,6 +160,16 @@
             order.PaymentStatus = PaymentStatus.PaymentPending;
             context.SaveChanges();
         }
+    }
+    
+    private void Delete(int orderId)
+    {
+        using var context = DbFactory.CreateDbContext();
+        Order order = context.Orders.Find(orderId)!;
+        context.Orders.Remove(order);
+        context.SaveChanges();
+        var task = LoadGroupAsync();
+        task.ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
     }
     
 }

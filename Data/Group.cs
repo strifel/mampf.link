@@ -23,7 +23,7 @@ public class Group
     [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
     public string? Description { get; set; }
     
-    [StringLength(30, ErrorMessage = "PaypalUsername cannot exceed 15 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Paypal Username may only contain a-z and numbers.")]
+    [StringLength(30, ErrorMessage = "PaypalUsername cannot exceed 30 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Paypal Username may only contain a-z and numbers.")]
     public string? PaypalUsername { get; set; }
     
     public ICollection<Order> Orders { get; } = new List<Order>();

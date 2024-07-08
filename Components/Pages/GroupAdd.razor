@@ -42,6 +42,7 @@
 @if (Saved)
 {
     <h3>Erfolgreich eingetragen.</h3>
+    <button @onclick="reset" class="btn btn-secondary">Noch eins eintragen?</button>
 }
 
 @code {
@@ -62,6 +63,16 @@
         editContext = new(Order);
         editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
+    }
+
+    private void reset()
+    {
+        Order = new();
+        Price = null;
+        editContext = new(Order);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+        Saved = false;
     }
     
     

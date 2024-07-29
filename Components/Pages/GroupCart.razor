@@ -1,4 +1,4 @@
-@page "/group/{GroupSlug}/finance"
+@page "/group/{GroupSlug}/cart"
 
 @using GroupOrder.Data
 @using Microsoft.AspNetCore.WebUtilities
@@ -8,51 +8,51 @@
 @inject IDbContextFactory<GroupContext> DbFactory
 @inject NavigationManager nm
 
-<PageTitle>Mampf.Link @Group?.GroupName Finances</PageTitle>
+<PageTitle>Mampf.Link @Group?.GroupName Cart-Helper</PageTitle>
 
 @if (Group != null)
 {
-    <h1>Finance Overview: @Group?.GroupName</h1>
+    <h1>Left to add to Cart: @Group?.GroupName</h1>
     
 
     <table class="table">
         <thead>
         <tr>
             <th>
-                Name
+                Food
             </th>
             <th>
                 Price
             </th>
             <th>
-                Payment Status
+                Mark as Added
             </th>
         </tr>
         </thead>
         <tbody>
         @foreach (Order order in Group!.Orders)
         {
+            @if (order.AddedToCart == true) { continue; }
             <tr>
                 <td>
-                    @order.Name
+                    @order.Food
                 </td>
                 <td>
-                    @order.GetPrice()€
+                    @order.GetPrice()€ 
+                    @if (order.PaymentStatus == PaymentStatus.Paid) {
+                        <span style="color: green"> (Paid)</span>
+                    }
                 </td>
-                <td style="padding-top: 3px; padding-bottom: 0">
-                    <InputSelect class="form-select form-select-sm" style="max-width: 200px" @bind-Value="@order.PaymentStatus">
-                        <option value="@PaymentStatus.Unpaid">Unpaid</option>
-                        <option value="@PaymentStatus.PaymentPending">Payment Pending</option>
-                        <option value="@PaymentStatus.Paid">Paid</option>
-                    </InputSelect>
+                <td>
+                  <button class="primary" @onclick="() => SetAdded(order)">Added</button>
                 </td>
             </tr>
         }
         </tbody>
-    </table>
-    
-    <button class="btn btn-primary" @onclick="Save">Save changes</button>
-}
+    </table><br><br>
+    <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
+    The total will be @Order.GetPrice(CalculateTotalSum())€.</p>
+    }
 
 @code {
     
@@ -112,16 +112,31 @@
             {
                 NotFound = true;
             }
+            
+            // As we have already loaded all orders we sum them up in code, not in an query
         }
 
         Loading = false;
     }
 
-    private async void Save()
+    private int CalculateTotalSum()
     {
+        if (Group == null) return 0;
+        return Group!.Orders.Sum(o => o.Price) ?? 0;
+    }
+    
+    private int CalculateAddedSum()
+    {
+        if (Group == null) return 0;
+        return Group!.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
+    }
+
+    private async void SetAdded(Order order) {
         if (Group == null) return;
         if (Group.AdminCode != AdminCode) return; // this theoretically should not happen
+        order.AddedToCart = true;
         await _context!.SaveChangesAsync();
+        StateHasChanged();
     }
     
 }

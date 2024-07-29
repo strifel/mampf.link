@@ -45,12 +45,12 @@
                 @order.Food
             </td>
             <td>
-                @order.getPrice()€
+                @order.GetPrice()€
             </td>
             <td>
                 @if (!string.IsNullOrEmpty(Group.PaypalUsername))
                 {
-                    <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.getPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
+                    <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.GetPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
                 }
                 @if (AdminCode != null && AdminCode == Group.AdminCode)
                 {
@@ -73,7 +73,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                     <div class="modal-body">
-                        <p>Have you sent @showPaidModal.getPrice()€?</p>
+                        <p>Have you sent @showPaidModal.GetPrice()€?</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="() => { Paid(showPaidModal.Id); showPaidModal = null; }">Yes</button>

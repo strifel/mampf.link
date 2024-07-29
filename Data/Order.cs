@@ -18,6 +18,10 @@ public class Order
     [Required]
     [StringLength(100, ErrorMessage = "Food cannot exceed 100 characters.")]
     public string? Food { get; set; }
+
+    [Required]
+    [DefaultValue(false)]
+    public bool? AddedToCart { get; set; }
     
     [Required]
     public int? Price { get; set; } // in cent
@@ -25,10 +29,15 @@ public class Order
     [Required]
     [DefaultValue(PaymentStatus.Unpaid)]
     public PaymentStatus PaymentStatus { get; set; }
-    
-    public String getPrice()
+
+    public String GetPrice()
     {
-        return (this.Price / 100) + "." + System.String.Format("{0:D2}", this.Price % 100);
+        return GetPrice(this.Price ?? 0);
+    }
+    
+    public static String GetPrice(int price)
+    {
+        return (price / 100) + "." + $"{price % 100:D2}";
     }
 }
 

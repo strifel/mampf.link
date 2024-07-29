@@ -92,6 +92,7 @@
         }
 
         Order!.PaymentStatus = PaymentStatus.Unpaid;
+        Order!.AddedToCart = false;
         Order!.Group = group;
         context.Add(Order!);
         context.SaveChanges();

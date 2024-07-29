@@ -90,7 +90,7 @@
             messageStore?.Add(() => Model!, "You must enter a Name between 1 and 100 chars.");
         }
 
-        if (Model!.GroupName != null && Model!.Description!.Length > 500)
+        if (Model!.Description != null && Model!.Description!.Length > 500)
         {
             messageStore?.Add(() => Model!, "Description should be maximum 500 characters");
         }

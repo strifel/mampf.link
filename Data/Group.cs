@@ -27,6 +27,8 @@ public class Group
     public string? PaypalUsername { get; set; }
     
     public ICollection<Order> Orders { get; } = new List<Order>();
+    public ICollection<Person> Persons { get; } = new List<Person>();
+
     
     
 }

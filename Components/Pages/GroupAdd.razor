@@ -18,7 +18,7 @@
         <div class="form-group">
             <label>
                 Name:
-                <InputText class="form-control" @bind-Value="Order!.Name"/>
+                <InputText class="form-control" @bind-Value="Name"/>
             </label>
         </div>
         <div class="form-group">
@@ -51,6 +51,7 @@
     
     private Order? Order { get; set; }
     private Decimal? Price { get; set; }
+    private String? Name { get; set; }
 
     private bool Saved { get; set; } = false;
     
@@ -69,6 +70,7 @@
     {
         Order = new();
         Price = null;
+        Name = null;
         editContext = new(Order);
         editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
@@ -91,9 +93,20 @@
             return;
         }
 
+        Person? person = await context.Persons.FirstOrDefaultAsync(p => p.Group == group && p.Name == Name);
+
+        if (person is null)
+        {
+            person = new Person();
+            person.Group = group;
+            person.Name = Name;
+            context.Add(person);
+        }
+
         Order!.PaymentStatus = PaymentStatus.Unpaid;
         Order!.AddedToCart = false;
         Order!.Group = group;
+        Order!.Person = person;
         context.Add(Order!);
         context.SaveChanges();
         Saved = true;
@@ -104,9 +117,9 @@
     {
         messageStore?.Clear();
 
-        if (Order!.Name == null || Order!.Name!.Length == 0 || Order!.Name!.Length > 100)
+        if (Name == null || Name!.Length == 0 || Name!.Length > 100)
         {
-            messageStore?.Add(() => Order, "You must enter a Name between 1 and 100 chars.");
+            messageStore?.Add(() => Order!, "You must enter a Name between 1 and 100 chars.");
         }
         
         if (Order!.Food == null || Order!.Food!.Length == 0 || Order!.Food!.Length > 100)

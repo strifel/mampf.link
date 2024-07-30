@@ -10,11 +10,10 @@ public class Order
     
     [Required]
     public Group Group { get; set; } = null!;
-
+    
     [Required]
-    [StringLength(100, ErrorMessage = "Name can not exceed 100 characters.")]
-    public string? Name { get; set; }
-
+    public Person Person { get; set; } = null!;
+    
     [Required]
     [StringLength(100, ErrorMessage = "Food cannot exceed 100 characters.")]
     public string? Food { get; set; }

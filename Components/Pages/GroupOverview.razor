@@ -39,7 +39,7 @@
         {
         <tr>
             <td>
-                @order.Name
+                @order.Person.Name
             </td>
             <td>
                 @order.Food
@@ -139,6 +139,7 @@
         {
             Group = await context.Groups
                 .Include(group => group.Orders)
+                .ThenInclude(order => order.Person)
                 .SingleOrDefaultAsync(
                     c => c.GroupSlug == GroupSlug);
 

@@ -1,0 +1,206 @@
+﻿@page "/group/{GroupSlug}"
+
+@using GroupOrder.Data
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+@inject IDbContextFactory<GroupContext> DbFactory
+@inject ProtectedLocalStorage ProtectedLocalStorage
+
+<PageTitle>Mampf.Link @Group?.GroupName</PageTitle>
+
+@if (Group != null)
+{
+    @if (Person != null)
+    {
+        <h1>Hi @Person.Name!</h1>
+        <h2>Welcome to @Group.GroupName</h2>
+        <p>@Group.Description</p>
+        
+        <h2>Your order!</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>
+                    Food
+                </th>
+                <th>
+                    Price
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (Order order in Person.Orders)
+            {
+                <tr>
+                    <td>
+                        @order.Food
+                    </td>
+                    <td>
+                        @order.GetPrice()€
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        
+        @if (GetPriceToPay() > 0)
+        {
+            <h2>Pay here!</h2>
+            <p>
+                You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader. <br/>
+                Please mark your Payment as Paid after you have paid the Group Leader.
+            </p>
+            @if (Group.PaypalUsername != null)
+            {
+                <p>You can use the Paypal Button to generate a Link to the Group Leader.</p>
+                <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
+            }
+            <button class="btn btn-secondary" @onclick="Paid">Mark as Paid</button>
+        }
+    }
+    @if (Person == null && NoPerson)
+    {
+        <h1>You are new to the group!</h1>
+        <h2>Enter your name to join @Group.GroupName</h2>
+        <p>@Group.Description</p>
+        
+        <div class="form-floating" style="max-width: 300px;display: inline-block">
+            <InputText
+                id="group_name"
+                placeholder=" "
+                class="form-control"
+                @bind-Value="NewName"/>
+            <label for="group_name">Your name:</label>
+        </div>
+        <button class="btn btn-primary" @onclick="CreatePerson" style="height: 58px">Join Group!</button>
+
+    }
+}
+
+@code {
+    
+    private Group? Group { get; set; }
+    private Person? Person { get; set; }
+    // Name of the person that is getting created
+    private String? NewName { get; set; }
+
+    private bool Loading { get; set; } = false;
+    private bool NotFound { get; set; } = false;
+    private bool NoPerson { get; set; } = false;
+
+    private GroupContext? _context;
+    
+    [Parameter]
+    public string? GroupSlug { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_context == null)
+        {
+            _context = DbFactory.CreateDbContext();
+        }
+
+        await LoadOrdersAsync();
+        
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // find local person
+        // this needs to be done here because it uses javascript interop
+        if (Group != null && Person == null)
+        {
+            var personId = await ProtectedLocalStorage.GetAsync<int>("grouporder_person_" + Group.Id);
+            if (personId.Success)
+            {
+                Person = Group.Persons.FirstOrDefault(p => p.Id == personId.Value);
+                if (Person == null)
+                {
+                    NoPerson = true;
+                }
+            }
+            else
+            {
+                NoPerson = true;
+            }
+            StateHasChanged();
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    // Loads the contact.
+    private async Task LoadOrdersAsync()
+    {
+        if (Loading)
+        {
+            return; //avoid concurrent requests.
+        }
+
+        Group = null;
+        Loading = true;
+        
+        if (_context!.Groups is not null)
+        {
+            Group = await _context.Groups
+                .Include(group => group.Orders)
+                .ThenInclude(order => order.Person)
+                .Include(group => group.Persons)
+                .SingleOrDefaultAsync(
+                    c => c.GroupSlug == GroupSlug);
+
+            if (Group is null)
+            {
+                NotFound = true;
+            }
+        }
+
+        Loading = false;
+    }
+
+    private async void Paid()
+    {
+        if (Person == null) return;
+        
+        foreach (var order in Person.Orders)
+        {
+            await _context!.Entry(order).ReloadAsync();
+            if (order.PaymentStatus == PaymentStatus.Unpaid)
+            {
+                order.PaymentStatus = PaymentStatus.PaymentPending;
+            }
+        }
+
+        await _context!.SaveChangesAsync();
+    }
+
+    private int GetPriceToPay()
+    {
+        if (Person == null) return 0;
+        return Person.Orders.Sum(o => o.PaymentStatus == PaymentStatus.Unpaid ? o.Price : 0) ?? 0;
+    }
+
+    private void CreatePerson()
+    {
+        if (Group == null) return;
+        if (NewName == null) return;
+        if (NewName.Length is > 100 or 0) return;
+        
+        Person Person = new Person
+        {
+            Group = Group,
+            Name = NewName
+        };
+
+        _context!.Add(Person);
+        _context.SaveChanges();
+
+        this.Person = Person;
+        
+        ProtectedLocalStorage.SetAsync("grouporder_person_" + Group.Id, Person.Id);
+    }
+    
+}

@@ -30,12 +30,17 @@ protected override void OnInitialized()
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="@HomeLink()" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Order
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="@OverviewLink()" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Overview (Legacy)
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="@AddLink()" Match="NavLinkMatch.All">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Add
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manual Add (Legacy)
             </NavLink>
         </div>
         @if (nm.Uri.Contains("admin="))
@@ -60,6 +65,11 @@ protected override void OnInitialized()
     private string HomeLink()
     {
         return _prefix + _suffix;
+    }
+    
+    private string OverviewLink()
+    {
+        return _prefix + "/overview" + _suffix;
     }
     
     private string AddLink()

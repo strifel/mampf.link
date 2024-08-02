@@ -77,7 +77,7 @@
         context.Add(Model);
         context.SaveChanges();
 
-        NavigationManager.NavigateTo($"/group/{Model!.GroupSlug}?admin={Model!.AdminCode}");
+        NavigationManager.NavigateTo($"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}");
     }
     
     private void HandleValidationRequested(object? sender,

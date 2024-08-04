@@ -50,11 +50,11 @@
             <td>
                 @if (!string.IsNullOrEmpty(Group.PaypalUsername))
                 {
-                    <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.GetPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
+                    <span class="btn" title="Send money with Paypal" style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.GetPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
                 }
                 @if (AdminCode != null && AdminCode == Group.AdminCode)
                 {
-                    <span style="cursor: pointer" @onclick="() => Delete(order.Id)">🗑</span>
+                    <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order.Id)">🗑</span>
                 }
             </td>
         </tr>

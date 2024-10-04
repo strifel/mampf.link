@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GroupOrder.Data;
 
+using System.ComponentModel;
+
 [Index(nameof(GroupSlug), IsUnique = true)]
 public class Group
 {
@@ -28,7 +30,15 @@ public class Group
     
     public ICollection<Order> Orders { get; } = new List<Order>();
     public ICollection<Person> Persons { get; } = new List<Person>();
+    
+    [Required]
+    [DefaultValue(PaymentType.PAY)]
+    public PaymentType PaymentType { get; set; }
+    
+}
 
-    
-    
+public enum PaymentType {
+    PAY,
+    NO_NEED_TO_PAY,
+    NO_PRICES
 }

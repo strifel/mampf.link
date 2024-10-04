@@ -13,7 +13,7 @@
 @if (Group != null)
 {
     <h1>Left to add to Cart: @Group?.GroupName</h1>
-    
+
 
     <table class="table">
         <thead>
@@ -21,9 +21,12 @@
             <th>
                 Food
             </th>
-            <th>
-                Price
-            </th>
+            @if (Group.PaymentType != PaymentType.NO_PRICES)
+            {
+                <th>
+                    Price
+                </th>
+            }
             <th>
                 Mark as Added
             </th>
@@ -37,22 +40,31 @@
                 <td>
                     @order.Food
                 </td>
+                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                {
+                    <td>
+                        @order.GetPrice()€
+                        @if (order.PaymentStatus == PaymentStatus.Paid)
+                        {
+                            <span style="color: green"> (Paid)</span>
+                        }
+                    </td>
+                }
                 <td>
-                    @order.GetPrice()€ 
-                    @if (order.PaymentStatus == PaymentStatus.Paid) {
-                        <span style="color: green"> (Paid)</span>
-                    }
-                </td>
-                <td>
-                  <button class="primary" @onclick="() => SetAdded(order)">Added</button>
+                    <button class="primary" @onclick="() => SetAdded(order)">Added</button>
                 </td>
             </tr>
         }
         </tbody>
-    </table><br><br>
-    <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
-    The total will be @Order.GetPrice(CalculateTotalSum())€.</p>
+    </table>
+    <br>
+    <br>
+    @if (Group.PaymentType != PaymentType.NO_PRICES)
+    {
+        <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
+            The total will be @Order.GetPrice(CalculateTotalSum())€.</p>
     }
+}
 
 @code {
     

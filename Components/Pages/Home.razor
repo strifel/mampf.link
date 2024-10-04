@@ -15,58 +15,75 @@
 
 <PageTitle>Mampf.Link</PageTitle>
 
-<main class="form-signin w-100 m-auto">
-    <EditForm EditContext="editContext" OnValidSubmit="Submit" FormName="group-create-form">
+<div class="container">
+    <EditForm EditContext="_editContext" OnValidSubmit="Submit" FormName="group-create-form">
         <AntiforgeryToken/>
-        <h1 class="h3 mb-3 fw-normal">Welcome to mampf.link</h1>
-        <p>Create a new Group here or use a link to join an existing one.</p><br/><br/>
-        <div class="form-floating">
-            <InputText
-                id="group_name"
-                placeholder=" "
-                class="form-control"
-                @bind-Value="Model!.GroupName"
-                style="border-bottom-left-radius: 0;border-bottom-right-radius: 0;border-bottom: none"/>
-            <label for="group_name">Group-Name:</label>
+        <div class="row">
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <h3 class="h3 fw-normal">Welcome to mampf.link</h3>
+                <p>Create a new Group here or use a link to join an existing one.</p>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
+                    <InputText
+                        id="group_name"
+                        placeholder=" "
+                        class="form-control"
+                        @bind-Value="Model!.GroupName"/>
+                    <label for="group_name">Group Name:</label>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
+                    <InputTextArea
+                        placeholder=" "
+                        id="group_description"
+                        class="form-control"
+                        @bind-Value="Model!.Description"
+                        style="height: 100px"
+                    />
+                    <label for="group_description">Description (optional):</label>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
+                    <InputText
+                        placeholder=" "
+                        id="paypal_username"
+                        class="form-control"
+                        @bind-Value="Model!.PaypalUsername"
+                    />
+                    <label for="paypal_username">Your PayPal Username (optional):</label>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div>
+                    <ValidationMessage For="() => Model!"/>
+                </div>
+                <button class="btn btn-primary" type="submit">Create Group</button>
+            </div>
         </div>
-        <div class="form-floating">
-            <InputTextArea
-                placeholder=" "
-                id="group_description"
-                class="form-control"
-                @bind-Value="Model!.Description"
-                style="min-height: 150px; border-radius: 0;border-bottom: none"/>
-            <label for="group_description">Description (optional):</label>
-        </div>
-        <div class="form-floating">
-            <InputText
-                placeholder=" "
-                id="paypal_username"
-                class="form-control"
-                @bind-Value="Model!.PaypalUsername"
-                style="border-top-left-radius: 0;border-top-right-radius: 0;"/>
-            <label for="paypal_username">Your Paypal Username (optional):</label>
-        </div><br/>
-        <div>
-            <ValidationMessage For="() => Model!"/>
-        </div>
-        <button class="btn btn-primary" type="submit">Create Group</button>
-        <p class="mt-5 mb-3 text-body-secondary"><a href="https://github.com/strifel/mampf.link">Code on Github</a></p>
     </EditForm>
-</main>
+    <div class="row">
+        <div class="d-flex justify-content-center">
+            <a href="https://github.com/strifel/mampf.link">Code on Github</a>
+        </div>
+    </div>
+
+</div>
 
 @code {
     [SupplyParameterFromForm] public Group? Model { get; set; }
-    private ValidationMessageStore? messageStore;
-    
-    private EditContext? editContext;
-    
+    private ValidationMessageStore? _messageStore;
+
+    private EditContext? _editContext;
+
     protected override void OnInitialized()
     {
         Model ??= new();
-        editContext = new(Model);
-        editContext.OnValidationRequested += HandleValidationRequested;
-        messageStore = new(editContext);
+        _editContext = new(Model);
+        _editContext.OnValidationRequested += HandleValidationRequested;
+        _messageStore = new(_editContext);
     }
 
     private void Submit()
@@ -79,33 +96,33 @@
 
         NavigationManager.NavigateTo($"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}");
     }
-    
+
     private void HandleValidationRequested(object? sender,
         ValidationRequestedEventArgs args)
     {
-        messageStore?.Clear();
+        _messageStore?.Clear();
 
         if (Model!.GroupName == null || Model!.GroupName!.Length == 0 || Model!.GroupName!.Length > 100)
         {
-            messageStore?.Add(() => Model!, "You must enter a Name between 1 and 100 chars.");
+            _messageStore?.Add(() => Model!, "You must enter a Name between 1 and 100 chars.");
         }
 
         if (Model!.Description != null && Model!.Description!.Length > 500)
         {
-            messageStore?.Add(() => Model!, "Description should be maximum 500 characters");
+            _messageStore?.Add(() => Model!, "Description should be maximum 500 characters");
         }
 
         if (Model!.PaypalUsername != null && (Model!.PaypalUsername!.Length > 20 || !new Regex("^[a-zA-Z0-9]+$").IsMatch(Model!.PaypalUsername!)))
         {
-            messageStore?.Add(() => Model!, "Please enter a valid paypal username");
+            _messageStore?.Add(() => Model!, "Please enter a valid paypal username");
         }
     }
-    
+
     public void Dispose()
     {
-        if (editContext is not null)
+        if (_editContext is not null)
         {
-            editContext.OnValidationRequested -= HandleValidationRequested;
+            _editContext.OnValidationRequested -= HandleValidationRequested;
         }
     }
 

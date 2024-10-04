@@ -27,9 +27,12 @@
                 <th>
                     Food
                 </th>
-                <th>
-                    Price
-                </th>
+                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                {
+                    <th>
+                        Price
+                    </th>
+                }
                 <th></th>
             </tr>
             </thead>
@@ -40,15 +43,21 @@
                     <td>
                         @order.Food
                     </td>
-                    <td>
-                        @order.GetPrice()€
-                    </td>
+                    @if (Group.PaymentType != PaymentType.NO_PRICES)
+                    {
+                        <td>
+                            @order.GetPrice()€
+                        </td>
+                    }
                     <td></td>
                 </tr>
             }
             <tr>
                 <td><InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/></td>
-                <td><InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/></td>
+                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                {
+                    <td><InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/></td>
+                }
                 <td><button class="btn btn-primary" type="submit">Add</button></td>
             </tr>
             </tbody>
@@ -69,6 +78,10 @@
                 <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
             }
             <button class="btn btn-secondary" @onclick="Paid">Mark as paid</button>
+        } else if (Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
+        {
+            <h2>Host pays!</h2>
+            <p>You are good to go!</p>
         }
     }
     @if (Person == null && NoPerson)
@@ -204,7 +217,8 @@
 
     private int GetPriceToPay()
     {
-        if (Person == null) return 0;
+        if (Person == null || Group == null) return 0;
+        if (Group.PaymentType != PaymentType.PAY) return 0;
         return Person.Orders.Sum(o => o.PaymentStatus == PaymentStatus.Unpaid ? o.Price : 0) ?? 0;
     }
 
@@ -237,17 +251,20 @@
         {
             messageStore?.Add(() => editContext!, "You must enter a Food Choice between 1 and 100 chars.");
         }
-        
-        if (OrderPrice == null | OrderPrice < 0)
-        {
-            messageStore?.Add(() => editContext!, "Price must be greater than 0.");
-        }
 
-        if (OrderPrice is > 2000)
+        if (Group is null || Group.PaymentType != PaymentType.NO_PRICES)
         {
-            // We produce an overflow if its bigger than 21474836€
-            // We also produce overflows if the sum of the total order is bigger than 21474836€
-            messageStore?.Add(() => editContext!, "Price must be smaller or equal to 2000€.");
+            if (OrderPrice == null | OrderPrice < 0)
+            {
+                messageStore?.Add(() => editContext!, "Price must be greater than 0.");
+            }
+
+            if (OrderPrice is > 2000)
+            {
+                // We produce an overflow if its bigger than 21474836€
+                // We also produce overflows if the sum of the total order is bigger than 21474836€
+                messageStore?.Add(() => editContext!, "Price must be smaller or equal to 2000€.");
+            }
         }
     }
 
@@ -255,7 +272,14 @@
     {
         Order NewOrder = new();
         NewOrder.Food = OrderFood!;
-        NewOrder.Price = (int)(OrderPrice! * 100);
+        if (Group!.PaymentType == PaymentType.NO_PRICES)
+        {
+            NewOrder.Price = 0;
+        }
+        else
+        {
+            NewOrder.Price = (int)(OrderPrice! * 100);
+        }
         NewOrder.Group = Group!;
         NewOrder.Person = Person!;
         if (Group != Person!.Group) return; // this should never happen

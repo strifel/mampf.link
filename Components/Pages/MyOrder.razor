@@ -11,105 +11,121 @@
 
 <PageTitle>Mampf.Link @Group?.GroupName</PageTitle>
 
-@if (Group != null)
-{
-    @if (Person != null)
+<div class="row">
+    @if (Group != null)
     {
-        <h1>Hi @Person.Name!</h1>
-        <h2>Welcome to @Group.GroupName</h2>
-        <p>@Group.Description</p>
-        
-        <h2>Order here!</h2>
-        <EditForm EditContext="editContext" OnValidSubmit="AddToOrder" FormName="order-form">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>
-                    Food
-                </th>
-                @if (Group.PaymentType != PaymentType.NO_PRICES)
+        @if (Person != null)
+        {
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <h1>Hi @Person.Name!</h1>
+                <h2>Welcome to @Group.GroupName</h2>
+                <p>@Group.Description</p>
+            </div>
+
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <h2>Order here!</h2>
+                <EditForm EditContext="editContext" OnValidSubmit="AddToOrder" FormName="order-form">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>
+                                Food
+                            </th>
+                            @if (Group.PaymentType != PaymentType.NO_PRICES)
+                            {
+                                <th>
+                                    Price
+                                </th>
+                            }
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (Order order in Person.Orders)
+                        {
+                            <tr>
+                                <td>
+                                    @order.Food
+                                </td>
+                                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                {
+                                    <td>
+                                        @order.GetPrice()€
+                                    </td>
+                                }
+                                <td></td>
+                            </tr>
+                        }
+                        <tr>
+                            <td>
+                                <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
+                            </td>
+                            @if (Group.PaymentType != PaymentType.NO_PRICES)
+                            {
+                                <td>
+                                    <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
+                                </td>
+                            }
+                            <td>
+                                <button class="btn btn-primary" type="submit">Add</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <ValidationMessage For="() => editContext!"/>
+                </EditForm>
+            </div>
+
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                @if (GetPriceToPay() > 0)
                 {
-                    <th>
-                        Price
-                    </th>
-                }
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (Order order in Person.Orders)
-            {
-                <tr>
-                    <td>
-                        @order.Food
-                    </td>
-                    @if (Group.PaymentType != PaymentType.NO_PRICES)
+                    <h2>Pay here!</h2>
+                    <p>
+                        You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader. <br/>
+                        Please mark your Payment as Paid after you have paid the group leader.
+                    </p>
+                    @if (Group.PaypalUsername != null)
                     {
-                        <td>
-                            @order.GetPrice()€
-                        </td>
+                        <p>You can use the Paypal Button to generate a paypal.me link for the correct amount to pay back the group leader.</p>
+                        <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
                     }
-                    <td></td>
-                </tr>
-            }
-            <tr>
-                <td><InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/></td>
-                @if (Group.PaymentType != PaymentType.NO_PRICES)
-                {
-                    <td><InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/></td>
+                    <button class="btn btn-secondary" @onclick="Paid">Mark as paid</button>
                 }
-                <td><button class="btn btn-primary" type="submit">Add</button></td>
-            </tr>
-            </tbody>
-        </table>
-            <ValidationMessage For="() => editContext!" />
-        </EditForm>
-        
-        @if (GetPriceToPay() > 0)
+                else if (Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
+                {
+                    <h2>Host pays!</h2>
+                    <p>You are good to go!</p>
+                }
+            </div>
+        }
+        @if (Person == null && NoPerson)
         {
-            <h2>Pay here!</h2>
-            <p>
-                You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader. <br/>
-                Please mark your Payment as Paid after you have paid the group leader.
-            </p>
-            @if (Group.PaypalUsername != null)
-            {
-                <p>You can use the Paypal Button to generate a paypal.me link for the correct amount to pay back the group leader.</p>
-                <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
-            }
-            <button class="btn btn-secondary" @onclick="Paid">Mark as paid</button>
-        } else if (Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
-        {
-            <h2>Host pays!</h2>
-            <p>You are good to go!</p>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <h1>You are new to the group!</h1>
+                <h2>Enter your name to join @Group.GroupName</h2>
+                <p>@Group.Description</p>
+
+                <div class="form-floating" style="max-width: 300px;display: inline-block">
+                    <InputText
+                        id="group_name"
+                        placeholder=" "
+                        class="form-control"
+                        @bind-Value="NewName"/>
+                    <label for="group_name">Your name:</label>
+                </div>
+                <button class="btn btn-primary" @onclick="CreatePerson" style="height: 58px">Join Group!</button>
+            </div>
         }
     }
-    @if (Person == null && NoPerson)
-    {
-        <h1>You are new to the group!</h1>
-        <h2>Enter your name to join @Group.GroupName</h2>
-        <p>@Group.Description</p>
-        
-        <div class="form-floating" style="max-width: 300px;display: inline-block">
-            <InputText
-                id="group_name"
-                placeholder=" "
-                class="form-control"
-                @bind-Value="NewName"/>
-            <label for="group_name">Your name:</label>
-        </div>
-        <button class="btn btn-primary" @onclick="CreatePerson" style="height: 58px">Join Group!</button>
-
-    }
-}
+</div>
 
 @code {
-    
+
     private Group? Group { get; set; }
     private Person? Person { get; set; }
     // Name of the person that is getting created
     private String? NewName { get; set; }
-    
+
     // Infos of food that is getting created
     private String? OrderFood { get; set; }
     private Decimal? OrderPrice { get; set; }
@@ -121,10 +137,10 @@
     private bool NoPerson { get; set; } = false;
 
     private GroupContext? _context;
-    
+
     [Parameter]
     public string? GroupSlug { get; set; }
-    
+
     protected override async Task OnParametersSetAsync()
     {
         if (_context == null)
@@ -133,7 +149,7 @@
         }
 
         await LoadOrdersAsync();
-        
+
         await base.OnParametersSetAsync();
     }
 
@@ -166,7 +182,7 @@
             }
             StateHasChanged();
         }
-        
+
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -180,7 +196,7 @@
 
         Group = null;
         Loading = true;
-        
+
         if (_context!.Groups is not null)
         {
             Group = await _context.Groups
@@ -188,7 +204,7 @@
                 .ThenInclude(order => order.Person)
                 .Include(group => group.Persons)
                 .SingleOrDefaultAsync(
-                    c => c.GroupSlug == GroupSlug);
+                c => c.GroupSlug == GroupSlug);
 
             if (Group is null)
             {
@@ -202,7 +218,7 @@
     private async void Paid()
     {
         if (Person == null) return;
-        
+
         foreach (var order in Person.Orders)
         {
             await _context!.Entry(order).ReloadAsync();
@@ -227,7 +243,7 @@
         if (Group == null) return;
         if (NewName == null) return;
         if (NewName.Length is > 100 or 0) return;
-        
+
         Person Person = new Person
         {
             Group = Group,
@@ -238,15 +254,15 @@
         _context.SaveChanges();
 
         this.Person = Person;
-        
+
         ProtectedLocalStorage.SetAsync("grouporder_person_" + Group.Id, Person.Id);
     }
-    
+
     private void HandleValidationRequested(object? sender,
         ValidationRequestedEventArgs args)
     {
         messageStore?.Clear();
-        
+
         if (string.IsNullOrEmpty(OrderFood) || OrderFood.Length > 100)
         {
             messageStore?.Add(() => editContext!, "You must enter a Food Choice between 1 and 100 chars.");
@@ -292,7 +308,7 @@
         ResetPendingOrder();
         StateHasChanged();
     }
-    
+
     private void ResetPendingOrder()
     {
         OrderPrice = null;
@@ -302,7 +318,7 @@
         editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
     }
-    
+
     public void Dispose()
     {
         if (editContext is not null)
@@ -310,5 +326,5 @@
             editContext.OnValidationRequested -= HandleValidationRequested;
         }
     }
-    
+
 }

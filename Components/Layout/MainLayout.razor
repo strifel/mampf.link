@@ -8,7 +8,7 @@
 
     protected override void OnInitialized()
     {
-        if (nm.Uri.Contains("group/"))
+        if (nm.Uri.Contains("group/") && nm.Uri.Contains("admin="))
         {
             _showSidebar = true;
         }

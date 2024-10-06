@@ -107,6 +107,16 @@
         nm.LocationChanged += HandleLocationChanged;
     }
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (!nm.Uri.Contains("admin="))
+        {
+            // This is only to not confuse people, not for security
+            nm.NavigateTo($"/group/{GroupSlug}");
+        }
+    }
+
     void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
     {
         if (nm.Uri.Contains("?") && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code))

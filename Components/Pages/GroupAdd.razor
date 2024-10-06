@@ -6,6 +6,7 @@
 @rendermode InteractiveServer
 
 @inject IDbContextFactory<GroupContext> DbFactory
+@inject NavigationManager nm
 
 <PageTitle>Mampf.Link Add</PageTitle>
 
@@ -60,6 +61,12 @@
 
     protected override void OnInitialized()
     {
+        if (!nm.Uri.Contains("admin="))
+        {
+            // This is only to not confuse people, not for security
+            nm.NavigateTo($"/group/{GroupSlug}");
+        }
+        
         Order ??= new();
         editContext = new(Order);
         editContext.OnValidationRequested += HandleValidationRequested;

@@ -24,4 +24,8 @@
     <Folder Include="wwwroot\bootstrap\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="Components\Pages\VanityURL.razor" />
+  </ItemGroup>
+
 </Project>

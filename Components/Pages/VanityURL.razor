@@ -1,0 +1,244 @@
+﻿@page "/org/{VanitySlug}"
+@implements IDisposable
+
+@using System.Security.Cryptography
+@using System.Text.RegularExpressions
+@using GroupOrder.Data
+@using Microsoft.EntityFrameworkCore
+@using Group = GroupOrder.Data.Group
+
+@rendermode InteractiveServer
+
+@inject IDbContextFactory<GroupContext> DbFactory
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>Mampf.Link</PageTitle>
+
+@if (Vanity != null)
+{
+    <div class="container">
+        @if (getExistingTimeOfCurrentGroup() > 120)
+        {
+            <EditForm EditContext="_editContext" OnValidSubmit="Submit" FormName="group-create-form">
+                <AntiforgeryToken/>
+                <div class="row">
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <h3 class="h3 fw-normal">Welcome to @Vanity.VanityName</h3>
+                    </div>
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <div class="form-floating">
+                            <InputText
+                                id="group_name"
+                                placeholder=" "
+                                class="form-control"
+                                @bind-Value="Model!.GroupName"/>
+                            <label for="group_name">Group Name:</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <div class="form-floating">
+                            <InputTextArea
+                                placeholder=" "
+                                id="group_description"
+                                class="form-control"
+                                @bind-Value="Model!.Description"
+                                style="height: 100px"/>
+                            <label for="group_description">Description (optional):</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <div class="form-floating">
+                            <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@Model.PaymentType">
+                                <option value="@PaymentType.PAY" default>Enabled</option>
+                                <option value="@PaymentType.NO_NEED_TO_PAY">Host pays everything</option>
+                                <option value="@PaymentType.NO_PRICES">Disabled</option>
+                            </InputSelect>
+                            <label for="payment_type">Payments:</label>
+                        </div>
+                    </div>
+                    @if (Model!.PaymentType == PaymentType.PAY)
+                    {
+                        <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                            <div class="form-floating">
+                                <InputText
+                                    placeholder=" "
+                                    id="paypal_username"
+                                    class="form-control"
+                                    @bind-Value="Model!.PaypalUsername"/>
+                                <label for="paypal_username">Your PayPal Username (optional):</label>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <div class="form-floating">
+                            <InputText
+                                placeholder=" "
+                                type="password"
+                                id="admincode_input"
+                                class="form-control"
+                                @bind-Value="VanityAdminCodeInput"/>
+                            <label for="admincode_input">Vanity-URL password:</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <div>
+                            <ValidationMessage For="() => Model!"/>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Create Group</button>
+                    </div>
+                </div>
+            </EditForm>
+        }
+        @if(getExistingTimeOfCurrentGroup() <= 120)
+        {
+            <div class="row">
+                <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                    <h3 class="h3 fw-normal">Welcome to @Vanity.VanityName</h3>
+                </div>
+                <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                    <p>Your current @Vanity.VanityName group is only @getExistingTimeOfCurrentGroup() minutes old. Please wait 120 minutes before creating a new one or create one with a random string <a href="/">here</a>.</p>
+                </div>
+            </div>
+        }
+        <br/>
+        <div class="row">
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div>
+                    <h3>History:</h3>
+                    <ul>
+                        @foreach (Group group in Vanity.History.Reverse())
+                        {
+                        <li><a href="/group/@group.GroupSlug">@group.GroupName</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                <a href="https://github.com/strifel/mampf.link">Code on Github</a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromForm] public Group? Model { get; set; }
+    [SupplyParameterFromForm] public String? VanityAdminCodeInput { get; set; }
+    private ValidationMessageStore? _messageStore;
+
+    [Parameter]
+    public string? VanitySlug { get; set; }
+
+    private GroupContext? _context;
+
+    private EditContext? _editContext;
+    private bool Loading { get; set; } = false;
+    private bool NotFound { get; set; } = false;
+
+    public Data.VanityURL? Vanity;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await this.LoadVanityAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        _editContext = new(Model);
+        _editContext.OnValidationRequested += HandleValidationRequested;
+        _messageStore = new(_editContext);
+    }
+
+    private async Task LoadVanityAsync()
+    {
+        if (Loading)
+        {
+            return; //avoid concurrent requests.
+        }
+
+        Vanity = null;
+        Loading = true;
+
+        if (_context == null)
+        {
+            _context = DbFactory.CreateDbContext();
+        }
+        
+        Vanity = await _context.VanityUrls
+                .Include(v => v.History)
+                .SingleOrDefaultAsync(
+                    c => c.Slug == VanitySlug);
+
+        if (Vanity is null)
+        {
+            NotFound = true;
+        }
+
+        Loading = false;
+    }
+
+    private void Submit()
+    {
+        if (Vanity == null) return;
+        if (_context == null) return;
+        
+        // Remove old Vanity
+
+        if (Vanity.History.Count > 0)
+        {
+            Vanity.History.Last().GroupSlug = RandomNumberGenerator.GetHexString(10);
+        }
+        
+        // Add new Vanity
+        
+        Model!.AdminCode = RandomNumberGenerator.GetHexString(10);
+        Model!.GroupSlug = Vanity.Slug;
+        Vanity.History.Add(Model);
+        Vanity.UsedAt = DateTime.Now;
+        _context.Add(Model);
+        _context.SaveChanges();
+
+        NavigationManager.NavigateTo($"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}");
+    }
+
+    private void HandleValidationRequested(object? sender,
+        ValidationRequestedEventArgs args)
+    {
+        _messageStore?.Clear();
+
+        if (Model!.GroupName == null || Model!.GroupName!.Length == 0 || Model!.GroupName!.Length > 100)
+        {
+            _messageStore?.Add(() => Model!, "You must enter a Name between 1 and 100 chars.");
+        }
+
+        if (Model!.Description != null && Model!.Description!.Length > 500)
+        {
+            _messageStore?.Add(() => Model!, "Description should be maximum 500 characters");
+        }
+
+        if (Model!.PaypalUsername != null && (Model!.PaypalUsername!.Length > 20 || !new Regex("^[a-zA-Z0-9]+$").IsMatch(Model!.PaypalUsername!)))
+        {
+            _messageStore?.Add(() => Model!, "Please enter a valid paypal username");
+        }
+
+        if (VanityAdminCodeInput == null || Vanity == null || !VanityAdminCodeInput.Equals(Vanity!.AdminCode))
+        {
+            _messageStore?.Add(() => Model!, "Please enter the correct Vanity-URL password");
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_editContext is not null)
+        {
+            _editContext.OnValidationRequested -= HandleValidationRequested;
+        }
+    }
+
+    private int getExistingTimeOfCurrentGroup()
+    {
+        return (int) (DateTime.Now - Vanity!.UsedAt).TotalMinutes;
+    }
+
+}

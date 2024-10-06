@@ -8,6 +8,8 @@ public class GroupContext : DbContext
     public DbSet<Group> Groups { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Person> Persons { get; set; }
+    
+    public DbSet<VanityURL> VanityUrls { get; set; }
     private string DbPath { get; }
 
     public GroupContext()

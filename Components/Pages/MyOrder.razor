@@ -20,10 +20,18 @@
                 <h1>Hi @Person.Name!</h1>
                 <h2>Welcome to @Group.GroupName</h2>
                 <p>@Group.Description</p>
+                @if (!IsOrderingClosed())
+                {
+                    <p>Ordering is closing at @Group.ClosingTime.Value.</p>
+                }
+                else
+                {
+                    <p><b>Ordering has already closed.</b></p>
+                }
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <h2>Order here!</h2>
+                <h2>Your order:</h2>
                 <EditForm EditContext="editContext" OnValidSubmit="AddToOrder" FormName="order-form">
                     <table class="table">
                         <thead>
@@ -56,20 +64,23 @@
                                 <td></td>
                             </tr>
                         }
-                        <tr>
-                            <td>
-                                <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
-                            </td>
-                            @if (Group.PaymentType != PaymentType.NO_PRICES)
-                            {
+                        @if (!IsOrderingClosed())
+                        {
+                            <tr>
                                 <td>
-                                    <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
+                                    <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
                                 </td>
-                            }
-                            <td>
-                                <button class="btn btn-primary" type="submit">Add</button>
-                            </td>
-                        </tr>
+                                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                {
+                                    <td>
+                                        <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
+                                    </td>
+                                }
+                                <td>
+                                    <button class="btn btn-primary" type="submit">Add</button>
+                                </td>
+                            </tr>
+                        }
                         </tbody>
                     </table>
                     <ValidationMessage For="() => editContext!"/>
@@ -282,6 +293,11 @@
                 messageStore?.Add(() => editContext!, "Price must be smaller or equal to 2000€.");
             }
         }
+
+        if (IsOrderingClosed())
+        {
+            messageStore?.Add(() => editContext!, "The ordering period has already closed.");
+        }
     }
 
     private void AddToOrder()
@@ -327,4 +343,9 @@
         }
     }
 
+    private bool IsOrderingClosed()
+    {
+        return DateTime.Now > Group!.ClosingTime;
+    }
+    
 }

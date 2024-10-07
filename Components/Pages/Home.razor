@@ -47,6 +47,17 @@
             </div>
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <div class="form-floating">
+                    <InputDate
+                        id="closingTime"
+                        class="form-control"
+                        @bind-Value="Model!.ClosingTime"
+                        type="@InputDateType.DateTimeLocal"
+                    />
+                    <label for="group_description">Closing Time:</label>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
                     <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@Model.PaymentType">
                         <option value="@PaymentType.PAY" default>Enabled</option>
                         <option value="@PaymentType.NO_NEED_TO_PAY">Host pays everything</option>
@@ -92,7 +103,11 @@
 
     protected override void OnInitialized()
     {
-        Model ??= new();
+        Model ??= new()
+        {
+            ClosingTime = DateTime.Now + TimeSpan.FromMinutes(30)
+        };
+        
         _editContext = new(Model);
         _editContext.OnValidationRequested += HandleValidationRequested;
         _messageStore = new(_editContext);
@@ -121,12 +136,17 @@
 
         if (Model!.Description != null && Model!.Description!.Length > 500)
         {
-            _messageStore?.Add(() => Model!, "Description should be maximum 500 characters");
+            _messageStore?.Add(() => Model!, "Description should be maximum 500 characters.");
         }
 
         if (Model!.PaypalUsername != null && (Model!.PaypalUsername!.Length > 20 || !new Regex("^[a-zA-Z0-9]+$").IsMatch(Model!.PaypalUsername!)))
         {
-            _messageStore?.Add(() => Model!, "Please enter a valid paypal username");
+            _messageStore?.Add(() => Model!, "Please enter a valid paypal username.");
+        }
+
+        if (Model!.ClosingTime == null || Model!.ClosingTime < DateTime.Now)
+        {
+            _messageStore?.Add(() => Model!, "Please select an Closing Time in the future.");
         }
     }
 

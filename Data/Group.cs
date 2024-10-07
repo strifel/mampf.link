@@ -28,6 +28,9 @@ public class Group
     [StringLength(30, ErrorMessage = "PaypalUsername cannot exceed 30 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Paypal Username may only contain a-z and numbers.")]
     public string? PaypalUsername { get; set; }
     
+    [StringLength(100, ErrorMessage = "MenuURL cannot exceed 100 characters.")]
+    public string? MenuURL { get; set; }
+    
     [Required]
     public DateTime? ClosingTime { get; set; }
     

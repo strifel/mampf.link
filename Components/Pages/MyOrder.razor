@@ -20,6 +20,10 @@
                 <h1>Hi @Person.Name!</h1>
                 <h2>Welcome to @Group.GroupName</h2>
                 <p>@Group.Description</p>
+                @if (Group.MenuURL != null)
+                {
+                    <p>Menu is located at <a href="@Group.MenuURL">@Group.MenuURL</a></p>
+                }
                 @if (!IsOrderingClosed())
                 {
                     <p>Ordering is closing at @Group.ClosingTime.Value.</p>

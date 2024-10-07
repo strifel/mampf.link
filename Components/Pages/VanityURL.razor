@@ -49,6 +49,16 @@
                     </div>
                     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                         <div class="form-floating">
+                            <InputText
+                                id="menu_url"
+                                placeholder=" "
+                                class="form-control"
+                                @bind-Value="Model!.MenuURL"/>
+                            <label for="group_name">Menu URL (optional):</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                        <div class="form-floating">
                             <InputDate
                                 id="closingTime"
                                 class="form-control"
@@ -245,6 +255,11 @@
         if (Model!.ClosingTime == null || Model!.ClosingTime < DateTime.Now)
         {
             _messageStore?.Add(() => Model!, "Please select an Closing Time in the future.");
+        }
+        
+        if (Model!.MenuURL != null && !Uri.IsWellFormedUriString(Model!.MenuURL, UriKind.Absolute))
+        {
+            _messageStore?.Add(() => Model!, "Please enter no or a valid url.");
         }
     }
 

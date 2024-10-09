@@ -35,11 +35,24 @@
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <h2>Your order:</h2>
+                @if (showAllOrders)
+                {
+                    <h2>All orders:</h2>
+                }
+                else
+                {
+                    <h2>Your order:</h2>
+                }
                 <EditForm EditContext="editContext" OnValidSubmit="AddToOrder" FormName="order-form">
                     <table class="table">
                         <thead>
                         <tr>
+                            @if (showAllOrders)
+                            {
+                                <th>
+                                    Person
+                                </th>
+                            }
                             <th>
                                 Food
                             </th>
@@ -53,24 +66,54 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach (Order order in Person.Orders)
+                        @if (!showAllOrders)
                         {
-                            <tr>
-                                <td>
-                                    @order.Food
-                                </td>
-                                @if (Group.PaymentType != PaymentType.NO_PRICES)
-                                {
+                            @foreach (Order order in Person.Orders)
+                            {
+                                <tr>
                                     <td>
-                                        @order.GetPrice()€
+                                        @order.Food
                                     </td>
-                                }
-                                <td></td>
-                            </tr>
+                                    @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                    {
+                                        <td>
+                                            @order.GetPrice()€
+                                        </td>
+                                    }
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            @foreach (Order order in Group.Orders)
+                            {
+                                <tr>
+                                    <td>
+                                        @order.Person.Name
+                                    </td>
+                                    <td>
+                                        @order.Food
+                                    </td>
+                                    @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                    {
+                                        <td>
+                                            @order.GetPrice()€
+                                        </td>
+                                    }
+                                    <td></td>
+                                </tr>
+                            }
                         }
                         @if (!IsOrderingClosed())
                         {
                             <tr>
+                                @if (showAllOrders)
+                                {
+                                    <td>
+                                        @Person.Name
+                                    </td>
+                                }
                                 <td>
                                     <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
                                 </td>
@@ -89,6 +132,7 @@
                     </table>
                     <ValidationMessage For="() => editContext!"/>
                 </EditForm>
+                <InputCheckbox @bind-Value="showAllOrders" id="showAllOrders" /><label style="padding-left: 5px" for="showAllOrders">Show orders of other people</label>
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
@@ -146,6 +190,7 @@
     private Decimal? OrderPrice { get; set; }
     private EditContext? editContext;
     private ValidationMessageStore? messageStore;
+    private bool showAllOrders = false;
 
     private bool Loading { get; set; } = false;
     private bool NotFound { get; set; } = false;

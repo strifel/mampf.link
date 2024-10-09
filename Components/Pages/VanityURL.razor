@@ -199,6 +199,13 @@
         {
             NotFound = true;
         }
+        else
+        {
+            if (Model is { GroupName: null })
+            {
+                Model.GroupName = Vanity.VanityName + " " + DateTime.Now.Day + "." + DateTime.Now.Month;
+            }
+        }
 
         Loading = false;
     }

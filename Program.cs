@@ -1,5 +1,6 @@
 using GroupOrder.Components;
 using GroupOrder.Data;
+using GroupOrder.Services.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddDbContextFactory<GroupContext>();
+builder.Services.AddScoped<IGroupService, GroupService>();
 
 var app = builder.Build();
 

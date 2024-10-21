@@ -10,6 +10,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDbContextFactory<GroupContext>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IAdminService, GroupAdminService>();
 
 var app = builder.Build();
 

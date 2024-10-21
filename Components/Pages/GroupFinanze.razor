@@ -1,18 +1,21 @@
 @page "/group/{GroupSlug}/finance"
 
+@using GroupOrder.Components.Layout
 @using GroupOrder.Data
-@using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.EntityFrameworkCore
+@using GroupOrder.Services.Common
 @rendermode InteractiveServer
 
-@inject IDbContextFactory<GroupContext> DbFactory
+@layout AppLayout
+
 @inject NavigationManager nm
+@inject IGroupService gs
+@inject IAdminService adminService
 
-<PageTitle>Mampf.Link @Group?.GroupName Finances</PageTitle>
+<PageTitle>Mampf.Link @gs.Group?.GroupName Finances</PageTitle>
 
-@if (Group != null)
+@if (gs.Group != null && adminService.IsAdmin())
 {
-    <h1>Finance Overview: @Group?.GroupName</h1>
+    <h1>Finance Overview: @gs.Group?.GroupName</h1>
     
 
     <table class="table">
@@ -30,7 +33,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (Order order in Group!.Orders)
+        @foreach (Order order in gs.Group!.Orders)
         {
             <tr>
                 <td>
@@ -51,78 +54,29 @@
         </tbody>
     </table>
     
+    <button class="btn btn-secondary" @onclick="Reload">Reload</button>
     <button class="btn btn-primary" @onclick="Save">Save changes</button>
+}
+else
+{
+    <h2>Go back to <a href="/group/@gs.Group?.GroupSlug">the My Order Page</a></h2>
 }
 
 @code {
-    
-    private Group? Group { get; set; }
-
-    private bool Loading { get; set; } = false;
-    private bool NotFound { get; set; } = false;
-    
     [Parameter]
     public string? GroupSlug { get; set; }
-    
-    private string? AdminCode { get; set; }
-
-    protected override Task OnInitializedAsync()
-    {
-        _context = DbFactory.CreateDbContext();
-        return base.OnInitializedAsync();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await LoadGroupAsync();
-        await base.OnParametersSetAsync();
-    }
-
-    GroupContext? _context;
-    
-    // Loads the contact.
-    private async Task LoadGroupAsync()
-    {
-        if (nm.Uri.Contains("?") && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code))
-        {
-            AdminCode = code;
-        }
-        else
-        {
-            NotFound = true;
-            return;
-        }
-        
-        if (Loading)
-        {
-            return; //avoid concurrent requests.
-        }
-
-        Group = null;
-        Loading = true;
-        
-        if (_context!.Groups is not null)
-        {
-            Group = await _context!.Groups
-                .Include(group => group.Orders)
-                .ThenInclude(order => order.Person)
-                .SingleOrDefaultAsync(
-                    c => c.GroupSlug == GroupSlug && c.AdminCode == AdminCode);
-
-            if (Group is null)
-            {
-                NotFound = true;
-            }
-        }
-
-        Loading = false;
-    }
 
     private async void Save()
     {
-        if (Group == null) return;
-        if (Group.AdminCode != AdminCode) return; // this theoretically should not happen
-        await _context!.SaveChangesAsync();
+        await gs.Save();
+        await gs.ReloadGroup();
+        StateHasChanged();
+    }
+
+    private async void Reload()
+    {
+        await gs.ReloadGroup();
+        StateHasChanged();
     }
     
 }

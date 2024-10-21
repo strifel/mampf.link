@@ -1,18 +1,20 @@
 @page "/group/{GroupSlug}/cart"
 
+@using GroupOrder.Components.Layout
 @using GroupOrder.Data
-@using Microsoft.AspNetCore.WebUtilities
-@using Microsoft.EntityFrameworkCore
+@using GroupOrder.Services.Common
 @rendermode InteractiveServer
 
-@inject IDbContextFactory<GroupContext> DbFactory
-@inject NavigationManager nm
+@layout AppLayout
 
-<PageTitle>Mampf.Link @Group?.GroupName Cart-Helper</PageTitle>
+@inject IGroupService gs
+@inject IAdminService adminService
 
-@if (Group != null)
+<PageTitle>Mampf.Link @gs.Group?.GroupName Cart-Helper</PageTitle>
+
+@if (gs.Group != null && adminService.IsAdmin())
 {
-    <h1>Left to add to Cart: @Group?.GroupName</h1>
+    <h1>Left to add to Cart: @gs.Group?.GroupName</h1>
 
 
     <table class="table">
@@ -21,7 +23,7 @@
             <th>
                 Food
             </th>
-            @if (Group.PaymentType != PaymentType.NO_PRICES)
+            @if (gs.Group!.PaymentType != PaymentType.NO_PRICES)
             {
                 <th>
                     Price
@@ -33,14 +35,14 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (Order order in Group!.Orders)
+        @foreach (Order order in gs.Group!.Orders)
         {
             @if (order.AddedToCart == true) { continue; }
             <tr>
                 <td>
                     @order.Food
                 </td>
-                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                 {
                     <td>
                         @order.GetPrice()€
@@ -59,108 +61,50 @@
     </table>
     <br>
     <br>
-    @if (Group.PaymentType != PaymentType.NO_PRICES)
+    @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
     {
         <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
             The total will be @Order.GetPrice(CalculateTotalSum())€.</p>
     }
-    <button class="btn btn-danger" @onclick="resetCart">Reset cart.</button>
+    <button class="btn btn-danger" @onclick="ResetCart">Reset cart.</button>
+}else
+{
+<h2>Go back to <a href="/group/@gs.Group?.GroupSlug">the My Order Page</a></h2>
 }
 
 @code {
-    
-    private Group? Group { get; set; }
-
-    private bool Loading { get; set; } = false;
-    private bool NotFound { get; set; } = false;
-    
     [Parameter]
     public string? GroupSlug { get; set; }
-    
-    private string? AdminCode { get; set; }
-
-    protected override Task OnInitializedAsync()
-    {
-        _context = DbFactory.CreateDbContext();
-        return base.OnInitializedAsync();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await LoadGroupAsync();
-        await base.OnParametersSetAsync();
-    }
-
-    GroupContext? _context;
-    
-    // Loads the contact.
-    private async Task LoadGroupAsync()
-    {
-        if (nm.Uri.Contains("?") && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code))
-        {
-            AdminCode = code;
-        }
-        else
-        {
-            NotFound = true;
-            return;
-        }
-        
-        if (Loading)
-        {
-            return; //avoid concurrent requests.
-        }
-
-        Group = null;
-        Loading = true;
-        
-        if (_context!.Groups is not null)
-        {
-            Group = await _context!.Groups
-                .Include(group => group.Orders)
-                .SingleOrDefaultAsync(
-                    c => c.GroupSlug == GroupSlug && c.AdminCode == AdminCode);
-
-            if (Group is null)
-            {
-                NotFound = true;
-            }
-            
-            // As we have already loaded all orders we sum them up in code, not in an query
-        }
-
-        Loading = false;
-    }
 
     private int CalculateTotalSum()
     {
-        if (Group == null) return 0;
-        return Group!.Orders.Sum(o => o.Price) ?? 0;
+        if (gs.Group == null) return 0;
+        return gs.Group.Orders.Sum(o => o.Price) ?? 0;
     }
     
     private int CalculateAddedSum()
     {
-        if (Group == null) return 0;
-        return Group!.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
+        if (gs.Group == null) return 0;
+        return gs.Group.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
     }
 
     private async void SetAdded(Order order) {
-        if (Group == null) return;
-        if (Group.AdminCode != AdminCode) return; // this theoretically should not happen
+        if (gs.Group == null) return;
+        if (!adminService.IsAdmin()) return; // this theoretically should not happen
         order.AddedToCart = true;
-        await _context!.SaveChangesAsync();
+        await gs.Save();
         StateHasChanged();
     }
 
-    private async void resetCart()
+    private async void ResetCart()
     {
-        if (Group == null) return;
-        if (Group.AdminCode != AdminCode) return; // this theoretically should not happen
-        foreach (Order order in Group.Orders)
+        if (gs.Group == null) return;
+        if (!adminService.IsAdmin()) return; // this theoretically should not happen
+        foreach (Order order in gs.Group.Orders)
         {
             order.AddedToCart = false;
         }
-        await _context!.SaveChangesAsync();
+        await gs.Save();
         StateHasChanged();
     }
     

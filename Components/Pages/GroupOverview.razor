@@ -1,21 +1,26 @@
 ﻿@page "/group/{GroupSlug}/overview"
 
+@using GroupOrder.Components.Layout
 @using GroupOrder.Data
-@using Microsoft.AspNetCore.WebUtilities
+@using GroupOrder.Services.Common
 @using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 
+@layout AppLayout
+
 @inject IDbContextFactory<GroupContext> DbFactory
 @inject NavigationManager nm
+@inject IAdminService adminService
+@inject IGroupService gs
 
-<PageTitle>Mampf.Link @Group?.GroupName</PageTitle>
+<PageTitle>Mampf.Link @gs.Group?.GroupName</PageTitle>
 
-@if (Group != null)
+@if (gs.Group != null && adminService.IsAdmin())
 {
-    <h1>Group Overview: @Group?.GroupName</h1>
-    <p>Link to Group: <a href="@nm.BaseUri.ToLower()group/@Group!.GroupSlug">@nm.BaseUri.ToLower()group/@Group!.GroupSlug</a></p>
+    <h1>Group Leader Overview: @gs.Group?.GroupName</h1>
+    <p>Link to Group: <a href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a></p>
     
-    <p>@Group?.Description</p>
+    <p>@gs.Group?.Description</p>
 
     <table class="table">
         <thead>
@@ -35,7 +40,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (Order order in Group!.Orders)
+        @foreach (Order order in gs.Group!.Orders)
         {
         <tr>
             <td>
@@ -48,13 +53,9 @@
                 @order.GetPrice()€
             </td>
             <td>
-                @if (!string.IsNullOrEmpty(Group.PaypalUsername))
+                @if (adminService.IsAdmin())
                 {
-                    <span class="btn" title="Send money with Paypal" style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#paidModal" onclick="window.open('https://www.paypal.com/paypalme/@Group.PaypalUsername/@order.GetPrice()')" @onmouseenter="() => { showPaidModal = order; }">💳</span>
-                }
-                @if (AdminCode != null && AdminCode == Group.AdminCode)
-                {
-                    <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order.Id)">🗑</span>
+                    <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order)">🗑</span>
                 }
             </td>
         </tr>
@@ -62,124 +63,31 @@
         </tbody>
     </table>
 }
-
-@if (showPaidModal != null)
+else
 {
-    <div id="paidModal" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Already paid?</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                    <div class="modal-body">
-                        <p>Have you sent @showPaidModal.GetPrice()€?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @onclick="() => { Paid(showPaidModal.Id); showPaidModal = null; }">Yes</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="() => showPaidModal = null">Not yet</button>
-                    </div>
-            </div>
-        </div>
-    </div>
+    <h2>Go back to <a href="/group/@gs.Group?.GroupSlug">the My Order Page</a></h2>
 }
 
 @code {
-    
-    private Group? Group { get; set; }
-
-    private bool Loading { get; set; } = false;
-    private bool NotFound { get; set; } = false;
-
-    private String? AdminCode;
-
-    private Order? showPaidModal;
-    
     [Parameter]
     public string? GroupSlug { get; set; }
-
-    public Order? Order { get; set; }
-
+    
     protected override async Task OnParametersSetAsync()
     {
-        await LoadGroupAsync();
         await base.OnParametersSetAsync();
         nm.LocationChanged += HandleLocationChanged;
     }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        if (!nm.Uri.Contains("admin="))
-        {
-            // This is only to not confuse people, not for security
-            nm.NavigateTo($"/group/{GroupSlug}");
-        }
-    }
-
     void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
     {
-        if (nm.Uri.Contains("?") && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code))
-        {
-            AdminCode = code;
-        }
-        else
-        {
-            AdminCode = null;
-        }
         StateHasChanged();
     }
-
-    // Loads the contact.
-    private async Task LoadGroupAsync()
-    {
-        HandleLocationChanged(null, null);
-        
-        if (Loading)
-        {
-            return; //avoid concurrent requests.
-        }
-
-        Group = null;
-        Loading = true;
-
-        using var context = DbFactory.CreateDbContext();
-
-        if (context.Groups is not null)
-        {
-            Group = await context.Groups
-                .Include(group => group.Orders)
-                .ThenInclude(order => order.Person)
-                .SingleOrDefaultAsync(
-                    c => c.GroupSlug == GroupSlug);
-
-            if (Group is null)
-            {
-                NotFound = true;
-            }
-        }
-
-        Loading = false;
-    }
-
-    private void Paid(int orderId)
-    {
-        using var context = DbFactory.CreateDbContext();
-        Order order = context.Orders.Find(orderId)!;
-        if (order.PaymentStatus == PaymentStatus.Unpaid)
-        {
-            order.PaymentStatus = PaymentStatus.PaymentPending;
-            context.SaveChanges();
-        }
-    }
     
-    private void Delete(int orderId)
+    private void Delete(Order order)
     {
-        using var context = DbFactory.CreateDbContext();
-        Order order = context.Orders.Find(orderId)!;
-        context.Orders.Remove(order);
-        context.SaveChanges();
-        var task = LoadGroupAsync();
+        gs.DeleteOrder(order);
+        gs.Save();
+        var task = gs.ReloadGroup();
         task.ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
     }
     

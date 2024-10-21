@@ -1,49 +1,63 @@
 @page "/group/{GroupSlug}/add"
 @implements IDisposable
 
+@using GroupOrder.Components.Layout
 @using GroupOrder.Data
+@using GroupOrder.Services.Common
 @using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 
+@layout AppLayout
+
+@inject IGroupService gs
+@inject IAdminService adminService
 @inject IDbContextFactory<GroupContext> DbFactory
-@inject NavigationManager nm
+
 
 <PageTitle>Mampf.Link Add</PageTitle>
 
-<h1>Add Food</h1>
-    
-@if (!Saved)
+<h1>Add Food manually as an group leader</h1>
+<p>Only use if it is really required as it is quite legacy and could produce bugs.</p>
+
+@if (adminService.IsAdmin())
 {
-    <EditForm EditContext="editContext" OnValidSubmit="Submit" FormName="group-add-form">
-        <AntiforgeryToken/>
-        <div class="form-group">
-            <label>
-                Name:
-                <InputText class="form-control" @bind-Value="Name"/>
-            </label>
-        </div>
-        <div class="form-group">
-            <label>
-                Food:
-                <InputText class="form-control" @bind-Value="Order!.Food"/>
-            </label>
-        </div>
-        <div class="form-group">
-            <label>
-                Price (Euro):
-                <InputNumber step="0.01" placeholder="10.00" class="form-control" @bind-Value="Price"/>
-            </label>
-        </div><br/>
-        <div>
-            <ValidationMessage For="() => Order!" />
-        </div>
-        <button class="btn btn-primary" type="submit">Submit</button>
-    </EditForm>
+    @if (!Saved)
+    {
+        <EditForm EditContext="editContext" OnValidSubmit="Submit" FormName="group-add-form">
+            <AntiforgeryToken/>
+            <div class="form-group">
+                <label>
+                    Name:
+                    <InputText class="form-control" @bind-Value="Name"/>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    Food:
+                    <InputText class="form-control" @bind-Value="Order!.Food"/>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    Price (Euro):
+                    <InputNumber step="0.01" placeholder="10.00" class="form-control" @bind-Value="Price"/>
+                </label>
+            </div><br/>
+            <div>
+                <ValidationMessage For="() => Order!"/>
+            </div>
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </EditForm>
+    }
+    @if (Saved)
+    {
+        <h3>Erfolgreich eingetragen.</h3>
+        <button @onclick="reset" class="btn btn-secondary">Noch eins eintragen?</button>
+    }
 }
-@if (Saved)
+else
 {
-    <h3>Erfolgreich eingetragen.</h3>
-    <button @onclick="reset" class="btn btn-secondary">Noch eins eintragen?</button>
+    <h2>Go back to <a href="/group/@gs.Group?.GroupSlug">the My Order Page</a></h2>
 }
 
 @code {
@@ -61,12 +75,6 @@
 
     protected override void OnInitialized()
     {
-        if (!nm.Uri.Contains("admin="))
-        {
-            // This is only to not confuse people, not for security
-            nm.NavigateTo($"/group/{GroupSlug}");
-        }
-        
         Order ??= new();
         editContext = new(Order);
         editContext.OnValidationRequested += HandleValidationRequested;
@@ -117,6 +125,7 @@
         context.Add(Order!);
         context.SaveChanges();
         Saved = true;
+        await gs.ReloadGroup();
     }
     
     private void HandleValidationRequested(object? sender,

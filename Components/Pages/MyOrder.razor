@@ -1,32 +1,35 @@
 ﻿@page "/group/{GroupSlug}"
 @implements IDisposable
 
+@using GroupOrder.Components.Layout
 @using GroupOrder.Data
+@using GroupOrder.Services.Common
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 
-@inject IDbContextFactory<GroupContext> DbFactory
-@inject ProtectedLocalStorage ProtectedLocalStorage
+@layout AppLayout
 
-<PageTitle>Mampf.Link @Group?.GroupName</PageTitle>
+@inject ProtectedLocalStorage ProtectedLocalStorage
+@inject IGroupService gs
+
+<PageTitle>Mampf.Link @gs.Group?.GroupName</PageTitle>
 
 <div class="row">
-    @if (Group != null)
+    @if (gs.Group != null)
     {
         @if (Person != null)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <h1>Hi @Person.Name!</h1>
-                <h2>Welcome to @Group.GroupName</h2>
-                <p>@Group.Description</p>
-                @if (Group.MenuURL != null)
+                <h2>Welcome to @gs.Group.GroupName</h2>
+                <p>@gs.Group.Description</p>
+                @if (gs.Group.MenuURL != null)
                 {
-                    <p>Menu is located at <a href="@Group.MenuURL" target="_blank">@Group.MenuURL</a></p>
+                    <p>Menu is located at <a href="@gs.Group.MenuURL" target="_blank">@gs.Group.MenuURL</a></p>
                 }
                 @if (!IsOrderingClosed())
                 {
-                    <p>Ordering is closing at @Group.ClosingTime.Value.</p>
+                    <p>Ordering is closing at @gs.Group.ClosingTime!.Value.</p>
                 }
                 else
                 {
@@ -56,7 +59,7 @@
                             <th>
                                 Food
                             </th>
-                            @if (Group.PaymentType != PaymentType.NO_PRICES)
+                            @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                             {
                                 <th>
                                     Price
@@ -74,7 +77,7 @@
                                     <td>
                                         @order.Food
                                     </td>
-                                    @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                    @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                                     {
                                         <td>
                                             @order.GetPrice()€
@@ -86,7 +89,7 @@
                         }
                         else
                         {
-                            @foreach (Order order in Group.Orders)
+                            @foreach (Order order in gs.Group.Orders)
                             {
                                 <tr>
                                     <td>
@@ -95,7 +98,7 @@
                                     <td>
                                         @order.Food
                                     </td>
-                                    @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                    @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                                     {
                                         <td>
                                             @order.GetPrice()€
@@ -117,7 +120,7 @@
                                 <td>
                                     <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
                                 </td>
-                                @if (Group.PaymentType != PaymentType.NO_PRICES)
+                                @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                                 {
                                     <td>
                                         <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
@@ -143,14 +146,14 @@
                         You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader. <br/>
                         Please mark your Payment as Paid after you have paid the group leader.
                     </p>
-                    @if (Group.PaypalUsername != null)
+                    @if (gs.Group.PaypalUsername != null)
                     {
                         <p>You can use the Paypal Button to generate a paypal.me link for the correct amount to pay back the group leader.</p>
-                        <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
+                        <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@gs.Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
                     }
                     <button class="btn btn-secondary" @onclick="Paid">Mark as paid</button>
                 }
-                else if (Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
+                else if (gs.Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
                 {
                     <h2>Host pays!</h2>
                     <p>You are good to go!</p>
@@ -161,8 +164,8 @@
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <h1>You are new to the group!</h1>
-                <h2>Enter your name to join @Group.GroupName</h2>
-                <p>@Group.Description</p>
+                <h2>Enter your name to join @gs.Group.GroupName</h2>
+                <p>@gs.Group.Description</p>
 
                 <div class="form-floating" style="max-width: 300px;display: inline-block">
                     <InputText
@@ -180,7 +183,6 @@
 
 @code {
 
-    private Group? Group { get; set; }
     private Person? Person { get; set; }
     // Name of the person that is getting created
     private String? NewName { get; set; }
@@ -195,24 +197,10 @@
     private bool Loading { get; set; } = false;
     private bool NotFound { get; set; } = false;
     private bool NoPerson { get; set; } = false;
-
-    private GroupContext? _context;
-
+    
     [Parameter]
     public string? GroupSlug { get; set; }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (_context == null)
-        {
-            _context = DbFactory.CreateDbContext();
-        }
-
-        await LoadOrdersAsync();
-
-        await base.OnParametersSetAsync();
-    }
-
+    
     protected override void OnInitialized()
     {
         editContext = new(this);
@@ -225,12 +213,12 @@
     {
         // find local person
         // this needs to be done here because it uses javascript interop
-        if (Group != null && Person == null)
+        if (gs.Group != null && Person == null)
         {
-            var personId = await ProtectedLocalStorage.GetAsync<int>("grouporder_person_" + Group.Id);
+            var personId = await ProtectedLocalStorage.GetAsync<int>("grouporder_person_" + gs.Group.Id);
             if (personId.Success)
             {
-                Person = Group.Persons.FirstOrDefault(p => p.Id == personId.Value);
+                Person = gs.Group.Persons.FirstOrDefault(p => p.Id == personId.Value);
                 if (Person == null)
                 {
                     NoPerson = true;
@@ -246,76 +234,47 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    // Loads the contact.
-    private async Task LoadOrdersAsync()
-    {
-        if (Loading)
-        {
-            return; //avoid concurrent requests.
-        }
-
-        Group = null;
-        Loading = true;
-
-        if (_context!.Groups is not null)
-        {
-            Group = await _context.Groups
-                .Include(group => group.Orders)
-                .ThenInclude(order => order.Person)
-                .Include(group => group.Persons)
-                .SingleOrDefaultAsync(
-                c => c.GroupSlug == GroupSlug);
-
-            if (Group is null)
-            {
-                NotFound = true;
-            }
-        }
-
-        Loading = false;
-    }
-
     private async void Paid()
     {
         if (Person == null) return;
 
         foreach (var order in Person.Orders)
         {
-            await _context!.Entry(order).ReloadAsync();
+            await gs.ReloadOrder(order);
             if (order.PaymentStatus == PaymentStatus.Unpaid)
             {
                 order.PaymentStatus = PaymentStatus.PaymentPending;
             }
         }
 
-        await _context!.SaveChangesAsync();
+        await gs.Save();
     }
 
     private int GetPriceToPay()
     {
-        if (Person == null || Group == null) return 0;
-        if (Group.PaymentType != PaymentType.PAY) return 0;
+        if (Person == null || gs.Group == null) return 0;
+        if (gs.Group.PaymentType != PaymentType.PAY) return 0;
         return Person.Orders.Sum(o => o.PaymentStatus == PaymentStatus.Unpaid ? o.Price : 0) ?? 0;
     }
 
     private void CreatePerson()
     {
-        if (Group == null) return;
+        if (gs.Group == null) return;
         if (NewName == null) return;
         if (NewName.Length is > 100 or 0) return;
 
-        Person Person = new Person
+        Person person = new Person
         {
-            Group = Group,
+            Group = gs.Group,
             Name = NewName
         };
 
-        _context!.Add(Person);
-        _context.SaveChanges();
+        gs.AddPerson(person);
+        gs.Save();
 
-        this.Person = Person;
+        Person = person;
 
-        ProtectedLocalStorage.SetAsync("grouporder_person_" + Group.Id, Person.Id);
+        ProtectedLocalStorage.SetAsync("grouporder_person_" + gs.Group.Id, person.Id);
     }
 
     private void HandleValidationRequested(object? sender,
@@ -328,7 +287,7 @@
             messageStore?.Add(() => editContext!, "You must enter a Food Choice between 1 and 100 chars.");
         }
 
-        if (Group is null || Group.PaymentType != PaymentType.NO_PRICES)
+        if (gs.Group is null || gs.Group.PaymentType != PaymentType.NO_PRICES)
         {
             if (OrderPrice == null | OrderPrice < 0)
             {
@@ -349,27 +308,24 @@
         }
     }
 
-    private void AddToOrder()
+    private async void AddToOrder()
     {
-        Order NewOrder = new();
-        NewOrder.Food = OrderFood!;
-        if (Group!.PaymentType == PaymentType.NO_PRICES)
+        Order newOrder = new()
         {
-            NewOrder.Price = 0;
-        }
-        else
+            Food = OrderFood!
+        };
+        
+        if (gs.Group!.PaymentType != PaymentType.NO_PRICES)
         {
-            NewOrder.Price = (int)(OrderPrice! * 100);
+            newOrder.Price = (int)(OrderPrice! * 100);
         }
-        NewOrder.Group = Group!;
-        NewOrder.Person = Person!;
-        if (Group != Person!.Group) return; // this should never happen
-        NewOrder.AddedToCart = false;
-        NewOrder.PaymentStatus = PaymentStatus.Unpaid;
+        
+        newOrder.PaymentStatus = PaymentStatus.Unpaid;
 
-        _context.Add(NewOrder);
-        _context.SaveChanges();
-        _context.Entry(Group).Reload();
+        gs.AddOrder(newOrder, Person!);
+        await gs.Save();
+        await gs.ReloadGroup();
+        
         ResetPendingOrder();
         StateHasChanged();
     }
@@ -394,7 +350,7 @@
 
     private bool IsOrderingClosed()
     {
-        return DateTime.Now > Group!.ClosingTime;
+        return DateTime.Now > gs.Group!.ClosingTime;
     }
     
 }

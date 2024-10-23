@@ -1,4 +1,7 @@
-﻿@inject NavigationManager nm
+﻿@using GroupOrder.Data
+@using GroupOrder.Services.Common
+@inject NavigationManager nm
+@inject IGroupService gs
 
 @code {
 
@@ -35,7 +38,7 @@ protected override void OnInitialized()
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="@OverviewLink()" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Overview (Legacy)
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Group Leader Overview
             </NavLink>
         </div>
         <div class="nav-item px-3">
@@ -43,19 +46,19 @@ protected override void OnInitialized()
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manual Add (Legacy)
             </NavLink>
         </div>
-        @if (nm.Uri.Contains("admin="))
+        @if (gs.Group is { PaymentType: PaymentType.PAY })
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="@FinanceLink()" Match="NavLinkMatch.All">
-                    <span class="bi bi-bank-nav-menu" aria-hidden="true"></span> Finanzen
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="@CartLink()" Match="NavLinkMatch.All">
-                    <span class="bi bi-cart-check" aria-hidden="true"></span> Cart
+                    <span class="bi bi-bank-nav-menu" aria-hidden="true"></span> Finances
                 </NavLink>
             </div>
         }
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="@CartLink()" Match="NavLinkMatch.All">
+                <span class="bi bi-cart-check" aria-hidden="true"></span> Cart
+            </NavLink>
+        </div>
     </nav>
 </div>
 

@@ -17,10 +17,10 @@
 <div class="row">
     @if (gs.Group != null)
     {
-        @if (Person != null)
+        @if (_personId != null)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <h1>Hi @Person.Name!</h1>
+                <h1>Hi @gs.GetPersonByID(_personId.Value)?.Name</h1>
                 <h2>Welcome to @gs.Group.GroupName</h2>
                 <p>@gs.Group.Description</p>
                 @if (gs.Group.MenuURL != null)
@@ -71,7 +71,7 @@
                         <tbody>
                         @if (!showAllOrders)
                         {
-                            @foreach (Order order in Person.Orders)
+                            @foreach (Order order in gs.GetPersonByID(_personId.Value)!.Orders)
                             {
                                 <tr>
                                     <td>
@@ -114,7 +114,7 @@
                                 @if (showAllOrders)
                                 {
                                     <td>
-                                        @Person.Name
+                                        @gs.GetPersonByID(_personId.Value)?.Name
                                     </td>
                                 }
                                 <td>
@@ -160,7 +160,7 @@
                 }
             </div>
         }
-        @if (Person == null && NoPerson)
+        @if (_personId == null && NoPerson)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <h1>You are new to the group!</h1>
@@ -183,7 +183,7 @@
 
 @code {
 
-    private Person? Person { get; set; }
+    private int? _personId;
     // Name of the person that is getting created
     private String? NewName { get; set; }
 
@@ -193,9 +193,7 @@
     private EditContext? editContext;
     private ValidationMessageStore? messageStore;
     private bool showAllOrders = false;
-
-    private bool Loading { get; set; } = false;
-    private bool NotFound { get; set; } = false;
+    
     private bool NoPerson { get; set; } = false;
     
     [Parameter]
@@ -213,16 +211,12 @@
     {
         // find local person
         // this needs to be done here because it uses javascript interop
-        if (gs.Group != null && Person == null)
+        if (gs.Group != null && _personId == null)
         {
             var personId = await ProtectedLocalStorage.GetAsync<int>("grouporder_person_" + gs.Group.Id);
             if (personId.Success)
             {
-                Person = gs.Group.Persons.FirstOrDefault(p => p.Id == personId.Value);
-                if (Person == null)
-                {
-                    NoPerson = true;
-                }
+                _personId = personId.Value;
             }
             else
             {
@@ -236,9 +230,11 @@
 
     private async void Paid()
     {
-        if (Person == null) return;
+        if (_personId == null) return;
+        Person? person = gs.GetPersonByID(_personId.Value);
+        if (person == null) return;
 
-        foreach (var order in Person.Orders)
+        foreach (var order in person.Orders)
         {
             await gs.ReloadOrder(order);
             if (order.PaymentStatus == PaymentStatus.Unpaid)
@@ -252,9 +248,12 @@
 
     private int GetPriceToPay()
     {
-        if (Person == null || gs.Group == null) return 0;
+        if (_personId == null) return 0;
+        Person? person = gs.GetPersonByID(_personId.Value);
+        if (person == null) return 0;
+        if (gs.Group == null) return 0;
         if (gs.Group.PaymentType != PaymentType.PAY) return 0;
-        return Person.Orders.Sum(o => o.PaymentStatus == PaymentStatus.Unpaid ? o.Price : 0) ?? 0;
+        return person.Orders.Sum(o => o.PaymentStatus == PaymentStatus.Unpaid ? o.Price : 0) ?? 0;
     }
 
     private void CreatePerson()
@@ -272,7 +271,7 @@
         gs.AddPerson(person);
         gs.Save();
 
-        Person = person;
+        _personId = person.Id;
 
         ProtectedLocalStorage.SetAsync("grouporder_person_" + gs.Group.Id, person.Id);
     }
@@ -310,6 +309,10 @@
 
     private async void AddToOrder()
     {
+        if (_personId == null) return;
+        Person? person = gs.GetPersonByID(_personId.Value);
+        if (person == null) return;
+        
         Order newOrder = new()
         {
             Food = OrderFood!
@@ -321,8 +324,8 @@
         }
         
         newOrder.PaymentStatus = PaymentStatus.Unpaid;
-
-        gs.AddOrder(newOrder, Person!);
+        
+        gs.AddOrder(newOrder, person);
         await gs.Save();
         await gs.ReloadGroup();
         

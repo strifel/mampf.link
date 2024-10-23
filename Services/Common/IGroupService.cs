@@ -31,6 +31,10 @@ public interface IGroupService {
     // Needs a save afterwards
     public void AddPerson(Person person);
     
+    // Returns the current instance of a specific person by ID
+    // ReSharper disable once InconsistentNaming
+    public Person? GetPersonByID(int id);
+    
     // Adds a specific order to the group
     // order is from person person
     // Needs a save afterwards

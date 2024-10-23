@@ -61,8 +61,13 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory): IGroupServ
 
     public void AddPerson(Person person)
     {
+        if (Group == null) return;
         person.Group = Group;
         _context?.Add(person);
+    }
+    public Person? GetPersonByID(int id)
+    {
+        return Group?.Persons.FirstOrDefault(p => p.Id == id);
     }
 
     public void AddOrder(Order order, Person person)

@@ -3,8 +3,11 @@ namespace GroupOrder.Services.Common;
 using Data;
 using Microsoft.EntityFrameworkCore;
 
-public class GroupService(IDbContextFactory<GroupContext> dbFactory): IGroupService {
+public class GroupService(IDbContextFactory<GroupContext> dbFactory, IGroupAutoreloadService autoreloadService): IGroupService, IDisposable {
+
+    public event EventHandler? OnGroupReload;
     
+    public Semaphore ReloadRestriction { get; } = new(1, 1);
     public Group? Group { get; private set; }
     private GroupContext? _context;
     
@@ -23,6 +26,14 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory): IGroupServ
     private async Task ForceLoadGroup(String slug)
     {
         Loading = true;
+        
+        if (Group != null)
+        {
+            autoreloadService.getHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
+        }
+        
+        if (_context != null) await _context.DisposeAsync();
+        
         // Create a new Context to not have issues with other groups
         // still loaded
         _context = dbFactory.CreateDbContext();
@@ -36,7 +47,22 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory): IGroupServ
         {
             NotFound = true;
         }
+        else
+        {
+            autoreloadService.getHandlerForGroup(Group).OnGroupUpdated += OnGroupUpdated;
+            Task.Run(() =>
+            {
+                OnGroupReload?.Invoke(this, EventArgs.Empty);
+            });
+        }
         Loading = false;
+    }
+    
+    private void OnGroupUpdated(object? sender, EventArgs e)
+    {
+        ReloadRestriction.WaitOne();
+        ReloadGroup().Wait();
+        ReloadRestriction.Release();
     }
 
     public async Task ReloadGroup()
@@ -89,6 +115,18 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory): IGroupServ
         if (_context == null) return;
         
         await _context.SaveChangesAsync();
+
+        Task.Run(() => {
+            autoreloadService.getHandlerForGroup(Group!).Call();
+        });
     }
-    
+
+    public void Dispose()
+    {
+        _context?.Dispose();
+        if (Group != null)
+        {
+            autoreloadService.getHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
+        }
+    }
 }

@@ -4,6 +4,12 @@ using Data;
 
 public interface IGroupService {
 
+    // EventHandler that emits an event when the group is reloaded
+    public event EventHandler? OnGroupReload;
+    
+    // Semaphore to restrict reloads (e.g. while editing)
+    public Semaphore ReloadRestriction { get; }
+
     // Returns the group that is currently loaded
     public Group? Group { get; }
     

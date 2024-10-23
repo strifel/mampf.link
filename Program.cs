@@ -11,6 +11,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddDbContextFactory<GroupContext>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IAdminService, GroupAdminService>();
+builder.Services.AddSingleton<IGroupAutoreloadService, GroupAutoreloadService>();
 
 var app = builder.Build();
 

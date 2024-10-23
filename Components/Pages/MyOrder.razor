@@ -1,6 +1,7 @@
 ﻿@page "/group/{GroupSlug}"
 @implements IDisposable
 
+@using System.Diagnostics
 @using GroupOrder.Components.Layout
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
@@ -204,7 +205,13 @@
         editContext = new(this);
         editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
+        gs.OnGroupReload += GsOnOnGroupReload;
         base.OnInitialized();
+    }
+    
+    private void GsOnOnGroupReload(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -231,8 +238,13 @@
     private async void Paid()
     {
         if (_personId == null) return;
+        gs.ReloadRestriction.WaitOne();
         Person? person = gs.GetPersonByID(_personId.Value);
-        if (person == null) return;
+        if (person == null)
+        {
+            gs.ReloadRestriction.Release();
+            return;
+        }
 
         foreach (var order in person.Orders)
         {
@@ -244,6 +256,7 @@
         }
 
         await gs.Save();
+        gs.ReloadRestriction.Release();
     }
 
     private int GetPriceToPay()
@@ -261,7 +274,9 @@
         if (gs.Group == null) return;
         if (NewName == null) return;
         if (NewName.Length is > 100 or 0) return;
-
+        
+        gs.ReloadRestriction.WaitOne();
+        
         Person person = new Person
         {
             Group = gs.Group,
@@ -272,6 +287,8 @@
         gs.Save();
 
         _personId = person.Id;
+
+        gs.ReloadRestriction.Release();
 
         ProtectedLocalStorage.SetAsync("grouporder_person_" + gs.Group.Id, person.Id);
     }
@@ -310,8 +327,13 @@
     private async void AddToOrder()
     {
         if (_personId == null) return;
+        gs.ReloadRestriction.WaitOne();
         Person? person = gs.GetPersonByID(_personId.Value);
-        if (person == null) return;
+        if (person == null)
+        {
+            gs.ReloadRestriction.Release();
+            return;
+        }
         
         Order newOrder = new()
         {
@@ -328,6 +350,8 @@
         gs.AddOrder(newOrder, person);
         await gs.Save();
         await gs.ReloadGroup();
+
+        gs.ReloadRestriction.Release();
         
         ResetPendingOrder();
         StateHasChanged();
@@ -349,6 +373,7 @@
         {
             editContext.OnValidationRequested -= HandleValidationRequested;
         }
+        gs.OnGroupReload -= GsOnOnGroupReload;
     }
 
     private bool IsOrderingClosed()

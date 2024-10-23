@@ -1,4 +1,5 @@
 @page "/group/{GroupSlug}/finance"
+@implements IDisposable
 
 @using GroupOrder.Components.Layout
 @using GroupOrder.Data
@@ -43,7 +44,7 @@
                     @order.GetPrice()€
                 </td>
                 <td style="padding-top: 3px; padding-bottom: 0">
-                    <InputSelect class="form-select form-select-sm" style="max-width: 200px" @bind-Value="@order.PaymentStatus">
+                    <InputSelect class="form-select form-select-sm" style="max-width: 200px" @bind-Value="@order.PaymentStatus" @oninput="(x) => Change(order, x)">
                         <option value="@PaymentStatus.Unpaid">Unpaid</option>
                         <option value="@PaymentStatus.PaymentPending">Payment Pending</option>
                         <option value="@PaymentStatus.Paid">Paid</option>
@@ -53,9 +54,7 @@
         }
         </tbody>
     </table>
-    
-    <button class="btn btn-secondary" @onclick="Reload">Reload</button>
-    <button class="btn btn-primary" @onclick="Save">Save changes</button>
+    <p>Saving is no longer necessary. It saves automatically :)</p>
 }
 else
 {
@@ -66,17 +65,30 @@ else
     [Parameter]
     public string? GroupSlug { get; set; }
 
-    private async void Save()
+    protected override async Task OnParametersSetAsync()
     {
-        await gs.Save();
-        await gs.ReloadGroup();
-        StateHasChanged();
-    }
-
-    private async void Reload()
-    {
-        await gs.ReloadGroup();
-        StateHasChanged();
+        await base.OnParametersSetAsync();
+        gs.OnGroupReload += GsOnOnGroupReload; 
     }
     
+    private void GsOnOnGroupReload(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async void Change(Order order, ChangeEventArgs x)
+    {
+        if (Enum.TryParse(x.Value as string, out PaymentStatus status))
+        {
+            gs.ReloadRestriction.WaitOne();
+            order.PaymentStatus = status;
+            await gs.Save();
+            gs.ReloadRestriction.Release();
+        }
+    }
+    
+    public void Dispose()
+    {
+        gs.OnGroupReload -= GsOnOnGroupReload;
+    }
 }

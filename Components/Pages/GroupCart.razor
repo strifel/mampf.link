@@ -3,6 +3,7 @@
 @using GroupOrder.Components.Layout
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
+@using GroupOrder.Components.Error
 @rendermode InteractiveServer
 
 @layout AppLayout
@@ -69,7 +70,7 @@
     <button class="btn btn-danger" @onclick="ResetCart">Reset cart.</button>
 }else
 {
-<h2>Go back to <a href="/group/@gs.Group?.GroupSlug">the My Order Page</a></h2>
+    <FourZeroThreeError />
 }
 
 @code {

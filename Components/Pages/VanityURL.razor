@@ -6,6 +6,7 @@
 @using GroupOrder.Data
 @using Microsoft.EntityFrameworkCore
 @using Group = GroupOrder.Data.Group
+@using GroupOrder.Components.Error
 
 @rendermode InteractiveServer
 
@@ -140,6 +141,10 @@
             </div>
         </div>
     </div>
+}
+else
+{
+    <FourZeroFourError />
 }
 
 @code {

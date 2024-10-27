@@ -1,0 +1,18 @@
+@using GroupOrder.Services.Common
+
+@inject IGroupService gs
+
+<div class="row">
+    <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+        <h1>This page could not be found.</h1>
+        @if (gs.Group != null)
+        {
+            <h2>Go back to <a href="/group/@gs.Group?.GroupSlug">the My Order Page</a>.</h2>
+        }
+        else
+        {
+            <h2><a href="/">Create a new group</a>.</h2>
+
+        }
+    </div>
+</div>

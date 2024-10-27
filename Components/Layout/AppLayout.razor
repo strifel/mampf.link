@@ -1,4 +1,5 @@
 ﻿@using GroupOrder.Services.Common
+@using GroupOrder.Components.Error
 @inherits LayoutComponentBase
 @inject NavigationManager nm
 @inject IAdminService adminService
@@ -50,7 +51,7 @@
         <p>Still loading, please wait...</p>
     } else if (gs.NotFound)
     {
-        <h1 style="margin: 2rem;">Could not find this group</h1>
+        <FourZeroFourError />
     }
 </div>
 

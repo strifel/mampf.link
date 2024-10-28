@@ -489,3 +489,4 @@ var/
 # Dockerignore specific
 Dockerfile
 .dockerignore
+screenshots

@@ -1,9 +1,6 @@
 name: docker
 
-on:
-  push:
-    branches:
-      - 'main'
+on: ["push", "release"]
 
 jobs:
   docker:
@@ -23,7 +20,13 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          tags: ghcr.io/strifel/mampf.link:beta-${{github.ref_name}}
+      - name: Build and push latest
+        uses: docker/build-push-action@v6
+        with:
+          push: true
           tags: ghcr.io/strifel/mampf.link:latest
+        if: ${{github.event_name == 'release'}}
 
 permissions: 
   packages: write

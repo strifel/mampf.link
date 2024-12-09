@@ -1,6 +1,7 @@
 ﻿@page "/group/{GroupSlug}/overview"
 @implements IDisposable
 
+@using System.Diagnostics
 @using GroupOrder.Components.Layout
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
@@ -19,11 +20,53 @@
 
 @if (gs.Group != null && adminService.IsAdmin())
 {
-    <h1>Group Leader Overview: @gs.Group?.GroupName</h1>
-    <p>Link to Group: <a href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a></p>
-    
-    <p>@gs.Group?.Description</p>
+    <h1>Group Leader Overview:
+        <InputText 
+            @bind-Value="@gs.Group.GroupName" 
+            @oninput="ChangeTitle"
+            @onfocusin="() => { newTitle = gs.Group.GroupName; gs.ReloadRestriction.WaitOne(); }"
+            @onfocusout="SaveTitle"/>
+    </h1>
+    <p>Link to Group: <a
+            href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a>
+    </p>
+    <p>Deadline:
+        <InputDate
+            id="closingTime"
+            class="form-control"
+            @bind-Value="gs.Group!.ClosingTime"
+            @oninput="ChangeDeadline"
+            @onfocusin="() => { newDeadline = gs.Group.ClosingTime; gs.ReloadRestriction.WaitOne(); }"
+            @onfocusout="SaveDeadline"
+            type="@InputDateType.DateTimeLocal"
+        />
+    </p>
 
+    <p>Description:<br/>
+        <InputTextArea 
+            @bind-Value="@gs.Group.Description" 
+            class="form-control"
+            @onfocusin="() => { newDescription = gs.Group.Description; gs.ReloadRestriction.WaitOne(); }"
+            @oninput="ChangeDescription" 
+            @onfocusout="SaveDescription"/>
+    </p>
+
+    <p>Menu-URL:<br/>
+        <InputText
+            id="menu_url"
+            class="form-control"
+            @bind-Value="@gs.Group.MenuURL"
+            @oninput="ChangeMenuURL"
+            @onfocusin="() => { newMenuURL = gs.Group.MenuURL; gs.ReloadRestriction.WaitOne(); }"
+            @onfocusout="SaveMenuURL"
+        />
+    </p>
+    
+    @if (fail)
+    {
+        <h2 style="color: red; padding-top: 20px;">Could not save. Please check format!</h2>
+    }
+    
     <table class="table">
         <thead>
         <tr>
@@ -73,6 +116,12 @@ else
 @code {
     [Parameter]
     public string? GroupSlug { get; set; }
+
+    private string? newTitle;
+    private string? newDescription;
+    private DateTime? newDeadline;
+    private string? newMenuURL;
+    private bool fail = false;
     
     protected override async Task OnParametersSetAsync()
     {
@@ -89,6 +138,99 @@ else
     private void HandleGroupChanged(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
+    }
+    
+    private async void ChangeTitle(ChangeEventArgs x)
+    {
+        if (x.Value is string && gs.Group != null)
+        {
+            newTitle = (string) x.Value;
+        }
+    }
+
+    private async void SaveTitle()
+    {
+        if (newTitle == null || newTitle.Length <= 0 || newTitle.Length > 100)
+        {
+            gs.ReloadRestriction.Release();
+            fail = true;
+            return;
+        }
+        if (gs.Group != null)
+        {
+            gs.Group.GroupName = newTitle;
+            await gs.Save();
+            fail = false;
+        }
+        gs.ReloadRestriction.Release();
+    }
+
+    private async void ChangeDescription(ChangeEventArgs x)
+    {
+        if (x.Value is string && gs.Group != null)
+        {
+            newDescription = (string) x.Value;
+        }
+    }
+
+    private async void SaveDescription()
+    {
+        if (newDescription == null || newDescription.Length > 500)
+        {
+            gs.ReloadRestriction.Release();
+            fail = true;
+            return;
+        }
+        if (gs.Group != null)
+        {
+            gs.Group.Description = newDescription;
+            await gs.Save();
+            fail = false;
+        }
+        gs.ReloadRestriction.Release();
+    }
+    
+    private async void ChangeMenuURL(ChangeEventArgs x)
+    {
+        if (x.Value is string && gs.Group != null)
+        {
+            newMenuURL = (string) x.Value;
+        }
+    }
+
+    private async void SaveMenuURL()
+    {
+        if (newMenuURL != null && !Uri.IsWellFormedUriString(newMenuURL, UriKind.Absolute))
+        {
+            gs.ReloadRestriction.Release();
+            fail = true;
+            return;
+        }
+        if (gs.Group != null)
+        {
+            gs.Group.MenuURL = newMenuURL;
+            await gs.Save();
+            fail = false;
+        }
+        gs.ReloadRestriction.Release();
+    }
+    
+    private async void ChangeDeadline(ChangeEventArgs x)
+    {
+        if (x.Value is String && gs.Group != null)
+        {
+            newDeadline = DateTime.Parse((string) x.Value!);
+        }
+    }
+
+    private async void SaveDeadline()
+    {
+        if (gs.Group != null)
+        {
+            gs.Group.ClosingTime = newDeadline;
+            await gs.Save();
+        }
+        gs.ReloadRestriction.Release();
     }
     
     private void Delete(Order order)

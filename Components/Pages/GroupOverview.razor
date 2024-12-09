@@ -1,11 +1,13 @@
 ﻿@page "/group/{GroupSlug}/overview"
 @implements IDisposable
 
+@using System.Diagnostics
 @using GroupOrder.Components.Layout
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
 @using Microsoft.EntityFrameworkCore
 @using GroupOrder.Components.Error
+@using GroupOrder.Components.Admin
 @rendermode InteractiveServer
 
 @layout AppLayout
@@ -19,16 +21,66 @@
 
 @if (gs.Group != null && adminService.IsAdmin())
 {
-    <h1>Group Leader Overview: @gs.Group?.GroupName</h1>
-    <p>Link to Group: <a href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a></p>
-    
-    <p>@gs.Group?.Description</p>
+    <h1>Group Leader Overview:
+        <InputText 
+            @bind-Value="@gs.Group.GroupName" 
+            @oninput="ChangeTitle"
+            @onfocusin="() => { newTitle = gs.Group.GroupName; gs.ReloadRestriction.WaitOne(); }"
+            @onfocusout="SaveTitle"/>
+    </h1>
+    <p>Link to Group: <a
+            href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a>
+    </p>
+    <p>Deadline:
+        <InputDate
+            id="closingTime"
+            class="form-control"
+            @bind-Value="gs.Group!.ClosingTime"
+            @oninput="ChangeDeadline"
+            @onfocusin="() => { newDeadline = gs.Group.ClosingTime; gs.ReloadRestriction.WaitOne(); }"
+            @onfocusout="SaveDeadline"
+            type="@InputDateType.DateTimeLocal"
+        />
+    </p>
 
+    <p>Description:<br/>
+        <InputTextArea 
+            @bind-Value="@gs.Group.Description" 
+            class="form-control"
+            @onfocusin="() => { newDescription = gs.Group.Description; gs.ReloadRestriction.WaitOne(); }"
+            @oninput="ChangeDescription" 
+            @onfocusout="SaveDescription"/>
+    </p>
+
+    <p>Menu-URL:<br/>
+        <InputText
+            id="menu_url"
+            class="form-control"
+            @bind-Value="@gs.Group.MenuURL"
+            @oninput="ChangeMenuURL"
+            @onfocusin="() => { newMenuURL = gs.Group.MenuURL; gs.ReloadRestriction.WaitOne(); }"
+            @onfocusout="SaveMenuURL"
+        />
+    </p>
+    
+    @if (fail)
+    {
+        <h2 style="color: red; padding-top: 20px;">Could not save. Please check format!</h2>
+    }
+    
     <table class="table">
         <thead>
         <tr>
             <th>
-                Name
+                Name 
+                @if (addPerson)
+                {
+                    <a @onclick="() => {addPerson = false;}" href="javascript:">Hide Add Person</a>
+                }
+                else
+                {
+                    <a @onclick="() => {addPerson = true;}" href="javascript:">Add Person</a>
+                }
             </th>
             <th>
                 Food
@@ -42,26 +94,52 @@
         </tr>
         </thead>
         <tbody>
+        @if (addPerson)
+        {
+            <AddPersonRow OnAdded="() => {addPerson = false;}" />
+        }
         @foreach (Order order in gs.Group!.Orders)
         {
+            <tr>
+                <td>
+                    @order.Person.Name
+                </td>
+                <td>
+                    @order.Food
+                </td>
+                <td>
+                    @order.GetPrice()€
+                </td>
+                <td>
+                    @if (adminService.IsAdmin())
+                    {
+                        <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order)">🗑</span>
+                    }
+                </td>
+            </tr>
+        }
         <tr>
             <td>
-                @order.Person.Name
+                <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@OrderPersonId">
+                    @foreach (Person person in gs.Group.Persons)
+                    {
+                        <option value="@person.Id">@person.Name</option>
+                    }
+                </InputSelect>
             </td>
             <td>
-                @order.Food
+                <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
             </td>
             <td>
-                @order.GetPrice()€
-            </td>
-            <td>
-                @if (adminService.IsAdmin())
+                @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                 {
-                    <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order)">🗑</span>
+                    <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
                 }
             </td>
+            <td>
+                <button class="btn btn-primary" type="submit" @onclick="AddToOrder">Add</button>
+            </td>
         </tr>
-        }
         </tbody>
     </table>
 }
@@ -73,6 +151,18 @@ else
 @code {
     [Parameter]
     public string? GroupSlug { get; set; }
+
+    private string? newTitle;
+    private string? newDescription;
+    private DateTime? newDeadline;
+    private string? newMenuURL;
+    private bool fail = false;
+    private bool addPerson = false;
+    
+    // Infos of food that is getting created
+    private String? OrderFood { get; set; }
+    private Decimal? OrderPrice { get; set; }
+    private int? OrderPersonId { get; set; }
     
     protected override async Task OnParametersSetAsync()
     {
@@ -91,12 +181,166 @@ else
         InvokeAsync(StateHasChanged);
     }
     
+    private async void ChangeTitle(ChangeEventArgs x)
+    {
+        if (x.Value is string && gs.Group != null)
+        {
+            newTitle = (string) x.Value;
+        }
+    }
+
+    private async void SaveTitle()
+    {
+        if (newTitle == null || newTitle.Length <= 0 || newTitle.Length > 100)
+        {
+            gs.ReloadRestriction.Release();
+            fail = true;
+            return;
+        }
+        if (gs.Group != null)
+        {
+            gs.Group.GroupName = newTitle;
+            await gs.Save();
+            fail = false;
+        }
+        gs.ReloadRestriction.Release();
+    }
+
+    private async void ChangeDescription(ChangeEventArgs x)
+    {
+        if (x.Value is string && gs.Group != null)
+        {
+            newDescription = (string) x.Value;
+        }
+    }
+
+    private async void SaveDescription()
+    {
+        if (newDescription == null || newDescription.Length > 500)
+        {
+            gs.ReloadRestriction.Release();
+            fail = true;
+            return;
+        }
+        if (gs.Group != null)
+        {
+            gs.Group.Description = newDescription;
+            await gs.Save();
+            fail = false;
+        }
+        gs.ReloadRestriction.Release();
+    }
+    
+    private async void ChangeMenuURL(ChangeEventArgs x)
+    {
+        if (x.Value is string && gs.Group != null)
+        {
+            newMenuURL = (string) x.Value;
+        }
+    }
+
+    private async void SaveMenuURL()
+    {
+        if (newMenuURL != null && !Uri.IsWellFormedUriString(newMenuURL, UriKind.Absolute))
+        {
+            gs.ReloadRestriction.Release();
+            fail = true;
+            return;
+        }
+        if (gs.Group != null)
+        {
+            gs.Group.MenuURL = newMenuURL;
+            await gs.Save();
+            fail = false;
+        }
+        gs.ReloadRestriction.Release();
+    }
+    
+    private async void ChangeDeadline(ChangeEventArgs x)
+    {
+        if (x.Value is String && gs.Group != null)
+        {
+            newDeadline = DateTime.Parse((string) x.Value!);
+        }
+    }
+
+    private async void SaveDeadline()
+    {
+        if (gs.Group != null)
+        {
+            gs.Group.ClosingTime = newDeadline;
+            await gs.Save();
+        }
+        gs.ReloadRestriction.Release();
+    }
+    
     private void Delete(Order order)
     {
         gs.ReloadRestriction.WaitOne();
         gs.DeleteOrder(order);
         gs.Save();
         gs.ReloadRestriction.Release();
+    }
+
+    private void AddToOrder()
+    {
+        if (gs.Group == null)
+        {
+            fail = true;
+            return;
+        }
+        
+        if (gs.Group!.PaymentType != PaymentType.NO_PRICES && OrderPrice is null or < 0)
+        {
+            fail = true;
+            return;
+        }
+
+        if (OrderPrice is > 2000)
+        {
+            fail = true;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(OrderFood) || OrderFood.Length > 50)
+        {
+            fail = true;
+            return;
+        }
+
+        Order order = new ()
+        {
+            Food = OrderFood
+        };
+        
+        if (OrderPersonId == null)
+        {
+            if (gs.Group.Persons.Count > 0)
+            {
+                order.Person = gs.Group.Persons.First();
+            }
+            else
+            {
+                fail = true;
+                return;
+            }
+        }
+        else
+        {
+            order.Person = gs.Group.Persons.Single((person) => person.Id == OrderPersonId);
+        }
+
+        if (OrderPrice != null)
+        {
+            order.Price = (int)(OrderPrice! * 100);
+        }
+
+        gs.ReloadRestriction.WaitOne();
+        gs.AddOrder(order, order.Person);
+        gs.Save();
+        gs.ReloadRestriction.Release();
+
+        fail = false;
     }
     
     public void Dispose()

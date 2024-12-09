@@ -1,0 +1,45 @@
+@using GroupOrder.Data
+@using GroupOrder.Services.Common
+
+@inject IGroupService gs
+
+<tr>
+    <td>
+        <InputText min-length="1" max-length="100" placeholder="Name" class="form-control" @bind-Value="PersonName"/>
+    </td>
+    <td></td>
+    <td></td>
+    <td>
+        <button class="btn btn-primary" type="submit" @onclick="AddPerson">Add</button>
+    </td>
+</tr>
+
+@code {
+
+    private String? PersonName { get; set; }
+    
+    [Parameter]
+    public EventCallback OnAdded { get; set; }
+
+    private async void AddPerson()
+    {
+        if (gs.Group == null) return;
+        if (PersonName == null) return;
+        if (PersonName.Length is > 100 or 0) return;
+        
+        gs.ReloadRestriction.WaitOne();
+        
+        Person person = new Person
+        {
+            Group = gs.Group,
+            Name = PersonName
+        };
+
+        gs.AddPerson(person);
+        await gs.Save();
+        
+        gs.ReloadRestriction.Release();
+        PersonName = null;
+        await OnAdded.InvokeAsync();
+    }
+}

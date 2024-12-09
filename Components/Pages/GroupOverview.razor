@@ -7,6 +7,7 @@
 @using GroupOrder.Services.Common
 @using Microsoft.EntityFrameworkCore
 @using GroupOrder.Components.Error
+@using GroupOrder.Components.Admin
 @rendermode InteractiveServer
 
 @layout AppLayout
@@ -71,7 +72,15 @@
         <thead>
         <tr>
             <th>
-                Name
+                Name 
+                @if (addPerson)
+                {
+                    <a @onclick="() => {addPerson = false;}" href="javascript:">Hide Add Person</a>
+                }
+                else
+                {
+                    <a @onclick="() => {addPerson = true;}" href="javascript:">Add Person</a>
+                }
             </th>
             <th>
                 Food
@@ -85,26 +94,52 @@
         </tr>
         </thead>
         <tbody>
+        @if (addPerson)
+        {
+            <AddPersonRow OnAdded="() => {addPerson = false;}" />
+        }
         @foreach (Order order in gs.Group!.Orders)
         {
+            <tr>
+                <td>
+                    @order.Person.Name
+                </td>
+                <td>
+                    @order.Food
+                </td>
+                <td>
+                    @order.GetPrice()€
+                </td>
+                <td>
+                    @if (adminService.IsAdmin())
+                    {
+                        <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order)">🗑</span>
+                    }
+                </td>
+            </tr>
+        }
         <tr>
             <td>
-                @order.Person.Name
+                <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@OrderPersonId">
+                    @foreach (Person person in gs.Group.Persons)
+                    {
+                        <option value="@person.Id">@person.Name</option>
+                    }
+                </InputSelect>
             </td>
             <td>
-                @order.Food
+                <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
             </td>
             <td>
-                @order.GetPrice()€
-            </td>
-            <td>
-                @if (adminService.IsAdmin())
+                @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
                 {
-                    <span class="btn" title="Delete order" style="cursor: pointer" @onclick="() => Delete(order)">🗑</span>
+                    <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
                 }
             </td>
+            <td>
+                <button class="btn btn-primary" type="submit" @onclick="AddToOrder">Add</button>
+            </td>
         </tr>
-        }
         </tbody>
     </table>
 }
@@ -122,6 +157,12 @@ else
     private DateTime? newDeadline;
     private string? newMenuURL;
     private bool fail = false;
+    private bool addPerson = false;
+    
+    // Infos of food that is getting created
+    private String? OrderFood { get; set; }
+    private Decimal? OrderPrice { get; set; }
+    private int? OrderPersonId { get; set; }
     
     protected override async Task OnParametersSetAsync()
     {
@@ -239,6 +280,67 @@ else
         gs.DeleteOrder(order);
         gs.Save();
         gs.ReloadRestriction.Release();
+    }
+
+    private void AddToOrder()
+    {
+        if (gs.Group == null)
+        {
+            fail = true;
+            return;
+        }
+        
+        if (gs.Group!.PaymentType != PaymentType.NO_PRICES && OrderPrice is null or < 0)
+        {
+            fail = true;
+            return;
+        }
+
+        if (OrderPrice is > 2000)
+        {
+            fail = true;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(OrderFood) || OrderFood.Length > 50)
+        {
+            fail = true;
+            return;
+        }
+
+        Order order = new ()
+        {
+            Food = OrderFood
+        };
+        
+        if (OrderPersonId == null)
+        {
+            if (gs.Group.Persons.Count > 0)
+            {
+                order.Person = gs.Group.Persons.First();
+            }
+            else
+            {
+                fail = true;
+                return;
+            }
+        }
+        else
+        {
+            order.Person = gs.Group.Persons.Single((person) => person.Id == OrderPersonId);
+        }
+
+        if (OrderPrice != null)
+        {
+            order.Price = (int)(OrderPrice! * 100);
+        }
+
+        gs.ReloadRestriction.WaitOne();
+        gs.AddOrder(order, order.Person);
+        gs.Save();
+        gs.ReloadRestriction.Release();
+
+        fail = false;
     }
     
     public void Dispose()

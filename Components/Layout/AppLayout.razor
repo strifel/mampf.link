@@ -8,20 +8,20 @@
 @code {
     [CascadingParameter]
     RouteData? RouteData { get; set; }
-    
+
 
     protected override async Task OnParametersSetAsync()
     {
         adminService.Initialize();
         if (RouteData?.RouteValues.ContainsKey("GroupSlug") == true)
         {
-                await gs.LoadGroup((string) RouteData?.RouteValues.GetValueOrDefault("GroupSlug")!);
-                StateHasChanged();
+            await gs.LoadGroup((string)RouteData?.RouteValues.GetValueOrDefault("GroupSlug")!);
+            StateHasChanged();
         }
         await base.OnParametersSetAsync();
         nm.LocationChanged += HandleLocationChanged;
     }
-    
+
     async void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
     {
         if (RouteData?.RouteValues.ContainsKey("GroupSlug") != true) return; // TODO clear
@@ -30,30 +30,54 @@
     }
 }
 
-<div class="page">
-    
-    @if (gs.Group != null)
-    {
+<header data-bs-theme="dark">
+    <div class="navbar navbar-dark navbar-expand-lg bg-dark shadow-sm">
+        <div class="container">
+            <a href="#" class="navbar-brand d-flex align-items-center">
+                <strong>Mampf.Link</strong>
+            </a>
         @if (adminService.IsAdmin())
         {
-            <div class="sidebar">
-                <NavMenu/>
-            </div>
+            <NavMenu></NavMenu>
         }
+        </div>
+    </div>
+</header>
 
-        <main>
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    } else if (gs.Loading)
-    {
-        <p>Still loading, please wait...</p>
-    } else if (gs.NotFound)
-    {
-        <FourZeroFourError />
-    }
-</div>
+@if (gs.Group != null)
+{
+    <main>
+        <section class="py-5 container">
+            @Body
+        </section>
+    </main>
+}
+else if (gs.Loading)
+{
+    <p>Still loading, please wait...</p>
+}
+else if (gs.NotFound)
+{
+    <FourZeroFourError/>
+}
+
+<footer class="text-body-secondary py-5">
+    <div class="container">
+        <p class="float-end mb-1">
+            <a href="#">Back to top</a>
+        </p>
+        <a href="https://github.com/strifel/mampf.link" class="mb-1">Mampf.Link is open source software under
+            GPL-2.0</a><br/>
+        @if (Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT") != null)
+        {
+            <a href="@Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT")" class="mb-1">Impressum</a>
+        }
+        @if (Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY") != null)
+        {
+            <a href="@Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY")" class="mb-1">Datenschutz/Privacy</a>
+        }
+    </div>
+</footer>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

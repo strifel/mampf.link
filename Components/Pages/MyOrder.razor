@@ -168,6 +168,18 @@
                 <h1>You are new to the group!</h1>
                 <h2>Enter your name to join @gs.Group.GroupName</h2>
                 <p>@gs.Group.Description</p>
+                @if (gs.Group.MenuURL != null)
+                {
+                    <p>Menu is located at <a href="@gs.Group.MenuURL" target="_blank">@gs.Group.MenuURL</a></p>
+                }
+                @if (!IsOrderingClosed())
+                {
+                    <p>Ordering is closing at @gs.Group.ClosingTime!.Value.</p>
+                }
+                else
+                {
+                    <p><b>Ordering has already closed.</b></p>
+                }
 
                 <div class="form-floating" style="max-width: 300px;display: inline-block">
                     <InputText

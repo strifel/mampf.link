@@ -1,7 +1,7 @@
 # Mampf.Link
 A simple Webtool to better organize Group (Food) orders.
 
-![A screenshot of the my order page showing a persons order](https://raw.githubusercontent.com/strifel/mampf.link/refs/heads/main/screenshots/myorder.png)
+![A screenshot of the my order page showing a persons order](https://raw.githubusercontent.com/strifel/mampf.link/refs/heads/main/wwwroot/screenshots/myorder.png)
 
 ## Workflow
 Somebody creates a group and is therefore the group leader.
@@ -32,6 +32,8 @@ services:
             - ./aspnet:/root/.aspnet
         environment:
           TZ: "Europe/Berlin" # this should be correct for your group
+          MAMPFLINK_IMPRINT: "linkToYourImprint"
+          MAMPFLINK_PRIVACY: "linkToYourPrivacySite"
 ```
 
 After updates (and initial setup) you need to manually run the Migrations

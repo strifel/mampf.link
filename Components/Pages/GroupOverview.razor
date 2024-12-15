@@ -28,9 +28,12 @@
             @onfocusin="() => { newTitle = gs.Group.GroupName; gs.ReloadRestriction.WaitOne(); }"
             @onfocusout="SaveTitle"/>
     </h1>
-    <p>Link to Group: <a
-            href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a>
+    <p>
+        <a id="groupLink" href="@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug">@nm.BaseUri.ToLower()group/@gs.Group!.GroupSlug</a>
+        <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('groupLink').href)">Copy Link</button>
+        <button class="btn btn-secondary" onclick="navigator.clipboard.writeText('We are ordering food🥘🍲🍕! \nLink to menu: ' + document.getElementById('menu_url').value + ' \nAdd your order here: '+document.getElementById('groupLink').href+' \nTaking orders until @gs.Group.ClosingTime!.Value')">Copy Sharetext</button>
     </p>
+    
     <p>Deadline:
         <InputDate
             id="closingTime"

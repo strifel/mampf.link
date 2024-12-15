@@ -6,6 +6,7 @@
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using GroupOrder.Components.MyOrder
 @rendermode InteractiveServer
 
 @layout AppLayout
@@ -85,7 +86,9 @@
                                             @order.GetPrice()€
                                         </td>
                                     }
-                                    <td></td>
+                                    <td>
+                                        <DeleteOrder Order="@order"/>
+                                    </td>
                                 </tr>
                             }
                         }
@@ -106,7 +109,12 @@
                                             @order.GetPrice()€
                                         </td>
                                     }
-                                    <td></td>
+                                    <td>
+                                        @if (order.Person == gs.GetPersonByID(_personId.Value))
+                                        {
+                                            <DeleteOrder Order="@order"/>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         }

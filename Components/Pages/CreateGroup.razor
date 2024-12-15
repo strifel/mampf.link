@@ -90,6 +90,23 @@
                 </div>
             }
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
+                    <InputSelect id="editing_rule" class="form-select form-control" @bind-Value="@Model.EditingRule">
+                        <option value="@EditingRule.NeverAllow">Never (only Group Leader can edit)</option>
+                        @if (Model!.PaymentType == PaymentType.PAY)
+                        {
+                            <option value="@EditingRule.AllowBeforeCartAndPaymentAndDeadline">If not in Cart, not paid and before Closing Time</option>
+                        }
+                        else
+                        {
+                            <option value="@EditingRule.AllowBeforeCartAndDeadline">If not in Cart and before Closing Time</option>
+                        }
+                        <option value="@EditingRule.AllowBeforeDeadline">If before Closing Time (not recommended, causes side effects)</option>
+                    </InputSelect>
+                    <label for="payment_type">Allow edits:</label>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <div>
                     <ValidationMessage For="() => Model!"/>
                 </div>
@@ -110,7 +127,8 @@
     {
         Model ??= new()
         {
-            ClosingTime = DateTime.Now + TimeSpan.FromMinutes(30)
+            ClosingTime = DateTime.Now + TimeSpan.FromMinutes(30),
+            EditingRule = EditingRule.NeverAllow
         };
         
         _editContext = new(Model);
@@ -157,6 +175,16 @@
         if (Model!.MenuURL != null && !Uri.IsWellFormedUriString(Model!.MenuURL, UriKind.Absolute))
         {
             _messageStore?.Add(() => Model!, "Please enter no or a valid url.");
+        }
+        
+        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndDeadline && Model!.PaymentType == PaymentType.PAY)
+        {
+            _messageStore?.Add(() => Model!, "Please select a valid Editing Rule.");
+        }
+        
+        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndPaymentAndDeadline && Model!.PaymentType != PaymentType.PAY)
+        {
+            _messageStore?.Add(() => Model!, "Please select a valid Editing Rule.");
         }
     }
 

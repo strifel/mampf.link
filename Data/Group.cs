@@ -41,10 +41,22 @@ public class Group
     [DefaultValue(PaymentType.PAY)]
     public PaymentType PaymentType { get; set; }
     
+    [Required]
+    [DefaultValue(Data.EditingRule.NeverAllow)]
+    public EditingRule EditingRule { get; set; }
+    
 }
 
 public enum PaymentType {
     PAY,
     NO_NEED_TO_PAY,
     NO_PRICES
+}
+
+public enum EditingRule {
+    AllowBeforeDeadline,
+    AllowBeforeCartAndDeadline,
+    AllowBeforeCartAndPaymentAndDeadline,
+    AskEverytime, //TODO implement pending deletes
+    NeverAllow
 }

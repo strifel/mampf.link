@@ -3,6 +3,9 @@ namespace GroupOrder.Services.Common;
 using Data;
 
 public interface IAdminService {
+    
+    // Is called on AdminCode changes
+    public event EventHandler? CodeChanged;
 
     // Call this in OnParametersSet
     public void Initialize();

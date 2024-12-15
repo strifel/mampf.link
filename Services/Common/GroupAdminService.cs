@@ -1,5 +1,6 @@
 namespace GroupOrder.Services.Common;
 
+using System.Diagnostics;
 using Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -9,6 +10,9 @@ public class GroupAdminService(NavigationManager nm, IGroupService groupService)
 
     private String? _adminCode;
     private bool _initialized = false;
+    
+    public event EventHandler? CodeChanged;
+
 
     public void Initialize()
     {
@@ -29,7 +33,12 @@ public class GroupAdminService(NavigationManager nm, IGroupService groupService)
     
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
     {
+        var oldCode = _adminCode;
         LoadAdminCode();
+        if (oldCode != _adminCode)
+        {
+            CodeChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void LoadAdminCode()

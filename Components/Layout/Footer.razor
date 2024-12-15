@@ -1,0 +1,20 @@
+<footer class="text-body-secondary py-5">
+    <div class="container">
+        <p class="float-end mb-1">
+            <a href="#">Back to top</a>
+        </p>
+        <a href="https://github.com/strifel/mampf.link" class="mb-1">Mampf.Link is open source software under GPL-2.0</a><br/>
+        @if (Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT") != null)
+        {
+            <a href="@Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT")" class="mb-1" style="padding-right: .25rem">Impressum</a> 
+        }
+        @if (Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY") != null)
+        {
+            <a href="@Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY")" class="mb-1">Datenschutz/Privacy</a>
+        }
+    </div>
+</footer>
+
+@code {
+    
+}

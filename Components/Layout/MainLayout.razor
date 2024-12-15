@@ -1,13 +1,22 @@
 ﻿@using Microsoft.AspNetCore.Http.Extensions
 @inherits LayoutComponentBase
 
-<div class="page">
-    <main>
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<header data-bs-theme="dark">
+    <div class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a href="#" class="navbar-brand d-flex align-items-center">
+                <strong>Mampf.Link</strong>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main>
+    @Body
+</main>
+
+
+<Footer></Footer>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

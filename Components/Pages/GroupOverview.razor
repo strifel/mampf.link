@@ -310,7 +310,8 @@ else
 
         Order order = new ()
         {
-            Food = OrderFood
+            Food = OrderFood,
+            PaymentStatus = PaymentStatus.Unpaid
         };
         
         if (OrderPersonId == null)

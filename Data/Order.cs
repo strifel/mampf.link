@@ -44,5 +44,6 @@ public enum PaymentStatus
 {
     Unpaid,
     PaymentPending,
-    Paid
+    Paid,
+    NoPayment
 }

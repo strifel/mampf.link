@@ -12,6 +12,7 @@
 
 @inject ProtectedLocalStorage ProtectedLocalStorage
 @inject IGroupService gs
+@inject IAdminService adminService
 
 <PageTitle>Mampf.Link @gs.Group?.GroupName</PageTitle>
 
@@ -344,8 +345,15 @@
         {
             newOrder.Price = (int)(OrderPrice! * 100);
         }
-        
-        newOrder.PaymentStatus = PaymentStatus.Unpaid;
+
+        if (adminService.IsAdmin())
+        {
+            newOrder.PaymentStatus = PaymentStatus.NoPayment;
+        }
+        else
+        {
+            newOrder.PaymentStatus = PaymentStatus.Unpaid;
+        }
         
         gs.AddOrder(newOrder, person);
         await gs.Save();

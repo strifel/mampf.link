@@ -14,7 +14,7 @@ There is also a feature which generates a paypal.me link with the correct amount
 ## Why?
 We order food quite a lot in groups. There was a lot of complaining from the people needing to 
 coordinate the ordering process, that this is quite a tedious job.
-This tool is here to replace the countless manuel tables and chat groups that people use to coordinate the 
+This tool is here to replace the countless manual tables and chat groups that people use to coordinate the 
 order taking and finances.
 
 ## Self-Host

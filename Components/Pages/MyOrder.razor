@@ -161,11 +161,32 @@
                         <p>You can use the Paypal Button to generate a paypal.me link for the correct amount to pay back the group leader.</p>
                         <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@gs.Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
                     }
-                    <button class="btn btn-secondary" @onclick="Paid">Mark as paid</button>
+                    <br/><br/>
+                    <p>Afterwards: mark as paid with <InputSelect @bind-Value="SelectedPaymentMethod">
+                        <option value="@PaymentMethod.Other" hidden>Select here</option>
+                        <option value="@PaymentMethod.Paypal">Paypal</option>
+                        <option value="@PaymentMethod.WireTransfer">wire transfer</option>
+                        <option value="@PaymentMethod.Cash">cash</option>
+                        <option value="@PaymentMethod.Other">other</option>
+                    </InputSelect>
+                    @if (SelectedPaymentMethod != null)
+                    {
+                        <button style="margin-left: 5px" class="btn btn-secondary" @onclick="Paid">save</button>
+                    }
+                    </p> 
+                    
+                }
+                else if (GetPriceToPay() < 0)
+                {
+                    <h2>Payments</h2>
+                    <p>
+                        You seem to have overpaid @Order.GetPrice(GetPriceToPay()*-1)€.
+                        Please contact the group leader.
+                    </p>
                 }
                 else if (gs.Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
                 {
-                    <h2>Host pays!</h2>
+                    <h2>Group leader pays!</h2>
                     <p>You are good to go!</p>
                 }
             </div>
@@ -217,6 +238,8 @@
     private bool showAllOrders = false;
     
     private bool NoPerson { get; set; } = false;
+
+    private PaymentMethod? SelectedPaymentMethod;
     
     [Parameter]
     public string? GroupSlug { get; set; }
@@ -259,6 +282,8 @@
     private async void Paid()
     {
         if (_personId == null) return;
+        if (SelectedPaymentMethod == null) return;
+        int paid = GetPriceToPay();
         gs.ReloadRestriction.WaitOne();
         Person? person = gs.GetPersonByID(_personId.Value);
         if (person == null)
@@ -267,27 +292,30 @@
             return;
         }
 
-        foreach (var order in person.Orders)
-        {
-            await gs.ReloadOrder(order);
-            if (order.PaymentStatus == PaymentStatus.Unpaid)
-            {
-                order.PaymentStatus = PaymentStatus.PaymentPending;
-            }
-        }
+        Payment payment = new Payment();
+        payment.Amount = paid;
+        payment.Person = person;
+        payment.PaymentConfirmed = false;
+        payment.PaymentMethod = SelectedPaymentMethod ?? PaymentMethod.Other;
+
+        gs.AddPayment(payment, person);
 
         await gs.Save();
         gs.ReloadRestriction.Release();
+        SelectedPaymentMethod = null;
     }
 
     private int GetPriceToPay()
     {
         if (_personId == null) return 0;
-        Person? person = gs.GetPersonByID(_personId.Value);
-        if (person == null) return 0;
         if (gs.Group == null) return 0;
         if (gs.Group.PaymentType != PaymentType.PAY) return 0;
-        return person.Orders.Sum(o => o.PaymentStatus == PaymentStatus.Unpaid ? o.Price : 0) ?? 0;
+        Person? person = gs.GetPersonByID(_personId.Value);
+        if (person == null)
+        {
+            return 0;
+        }
+        return person.GetPriceToPay();
     }
 
     private void CreatePerson()
@@ -358,7 +386,8 @@
         
         Order newOrder = new()
         {
-            Food = OrderFood!
+            Food = OrderFood!,
+            PaymentStatus = PaymentStatus.Unpaid
         };
         
         if (gs.Group!.PaymentType != PaymentType.NO_PRICES)
@@ -368,12 +397,15 @@
 
         if (adminService.IsAdmin())
         {
-            newOrder.PaymentStatus = PaymentStatus.NoPayment;
+            Payment payment = new Payment();
+            payment.PaymentMethod = PaymentMethod.NoPayment;
+            payment.Amount = newOrder.Price;
+            payment.Person = person;
+            payment.PaymentNote = "Auto added due to group leader order";
+            payment.PaymentConfirmed = false;
+            gs.AddPayment(payment, person);
         }
-        else
-        {
-            newOrder.PaymentStatus = PaymentStatus.Unpaid;
-        }
+        
         
         gs.AddOrder(newOrder, person);
         await gs.Save();

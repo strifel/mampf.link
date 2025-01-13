@@ -41,6 +41,7 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory, IGroupAutor
             .Include(group => group.Orders)
             .ThenInclude(order => order.Person)
             .Include(group => group.Persons)
+            .ThenInclude(person => person.Payments)
             .SingleOrDefaultAsync(
             c => c.GroupSlug == slug);
         if (Group == null)
@@ -85,6 +86,11 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory, IGroupAutor
         _context?.Orders.Remove(order);
     }
 
+    public void DeletePayment(Payment payment)
+    {
+        _context?.Payments.Remove(payment);
+    }
+
     public void AddPerson(Person person)
     {
         if (Group == null) return;
@@ -108,6 +114,17 @@ public class GroupService(IDbContextFactory<GroupContext> dbFactory, IGroupAutor
             order.Price = 0;
         }
         _context?.Add(order);
+    }
+    
+    public void AddPayment(Payment payment, Person person)
+    {
+        if (Group == null) return;
+        payment.Person = person;
+        if (Group.PaymentType != PaymentType.PAY)
+        {
+            throw new InvalidDataException("Cant add Payment to Group without Payments");
+        }
+        _context?.Add(payment);
     }
 
     public async Task Save()

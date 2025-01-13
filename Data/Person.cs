@@ -18,5 +18,17 @@ public class Person
     
     // One Person can only ever have Orders from the correct group
     public ICollection<Order> Orders { get; } = new List<Order>();
+    
+    public ICollection<Payment> Payments { get; } = new List<Payment>();
+
+    // Returns the price that has no pending or confirmed payment
+    public int GetPriceToPay(bool requireConfirmed = false)
+    {
+        if (requireConfirmed)
+        {
+            return Orders.Sum(o => o.Price) - Payments.Sum(p => (p.PaymentConfirmed ?? false) ? p.Amount : 0) ?? 0;
+        }
+        return Orders.Sum(o => o.Price) - Payments.Sum(p => p.Amount) ?? 0;
+    }
 
 }

@@ -5,6 +5,8 @@
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
 @using GroupOrder.Components.Error
+@using GroupOrder.Migrations
+@using Order=GroupOrder.Data.Order
 @rendermode InteractiveServer
 
 @layout AppLayout
@@ -18,45 +20,53 @@
 @if (gs.Group != null && adminService.IsAdmin())
 {
     <h1>Finance Overview: @gs.Group?.GroupName</h1>
-    
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th>
-                Name
-            </th>
-            <th>
-                Price
-            </th>
-            <th>
-                Payment Status
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (Order order in gs.Group!.Orders)
-        {
-            <tr>
-                <td>
-                    @order.Person.Name
-                </td>
-                <td>
-                    @order.GetPrice()€
-                </td>
-                <td style="padding-top: 3px; padding-bottom: 0">
-                    <InputSelect class="form-select form-select-sm" style="max-width: 200px" @bind-Value="@order.PaymentStatus" @oninput="(x) => Change(order, x)">
-                        <option value="@PaymentStatus.Unpaid">Unpaid</option>
-                        <option value="@PaymentStatus.PaymentPending">Payment Pending</option>
-                        <option value="@PaymentStatus.Paid">Paid</option>
-                        <option hidden value="@PaymentStatus.NoPayment">No Payment</option>
-                    </InputSelect>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-    <p>Saving is no longer necessary. It saves automatically :)</p>
+    <InputCheckbox @bind-Value="HideConfirmedPaid" id="HideConfirmedPaid" /><label style="padding-left: 5px" for="HideConfirmedPaid">Show only payments that require attention</label>
+
+    @foreach (Person person in GetPersons())
+    {
+        <div class="card" style="width: 100%; margin-bottom: 1rem">
+            <div class="card-header">
+                @person.Name (@Order.GetPrice(person.Orders.Sum(o => o.Price) ?? 0)€)
+                @if (person.Payments.Sum(p => ((p.PaymentConfirmed ?? false) ? 0 : 1)) > 0)
+                {
+                    <span style="color: yellow"> (Payments unconfirmed)</span>
+                }
+                @if (person.GetPriceToPay() > 0)
+                {
+                    <span style="color: red"> (Still owes @Order.GetPrice(person.GetPriceToPay())€)</span>
+                    <a class="float-end" href="javascript:" @onclick="() => Paid(person)">Paid up</a>
+                } 
+                @if (person.GetPriceToPay(requireConfirmed: true) < 0)
+                {
+                    <span style="color: orange"> (Overpaid @Order.GetPrice(person.GetPriceToPay())€)</span>
+                    <a class="float-end" href="javascript:" @onclick="() => PaidBack(person)">I paid back</a>
+                }
+                
+            </div>
+            <ul class="list-group list-group-flush">
+            @foreach (Payment payment in person.Payments)
+            {
+                <li class="list-group-item @((payment.PaymentConfirmed ?? false) ? "" : "payment-unconfirmed")">
+                    @Order.GetPrice(payment.Amount ?? 0)€ paid with @payment.PaymentMethod 
+                    @if (payment.PaymentNote != null)
+                    {
+                        <span> (Custom note: @payment.PaymentNote)</span>
+                    }
+                    @if (!(payment.PaymentConfirmed ?? true))
+                    {
+                        <a @onclick="() => { payment.PaymentConfirmed = true; gs.Save(); }" class="float-end" href="javascript:">Confirm</a>
+                    }
+                    else
+                    {
+                        <a @onclick="() => { payment.PaymentConfirmed = false; gs.Save(); }" class="float-end" href="javascript:">Un-Confirm</a>
+                    }
+                    <a style="margin-right: 3px;" @onclick="() => { gs.DeletePayment(payment); gs.Save(); }" class="float-end" href="javascript:">Delete</a>
+                </li>
+                }
+            </ul>
+        </div>
+    }
 }
 else
 {
@@ -67,6 +77,8 @@ else
     [Parameter]
     public string? GroupSlug { get; set; }
 
+    private bool HideConfirmedPaid = false;
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -76,6 +88,21 @@ else
     private void GsOnOnGroupReload(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    private IEnumerable<Person> GetPersons()
+    {
+        if (gs.Group == null)
+        {
+            return [];
+        }
+        IEnumerable<Person> persons = gs.Group!.Persons;
+        persons = persons.Where(p => p.Orders.Sum(x => x.Price) != 0 || p.Payments.Count != 0).OrderBy(x => x.Name);
+        if (HideConfirmedPaid)
+        {
+            persons = persons.Where(p => p.GetPriceToPay(true) != 0);
+        }
+        return persons;
     }
 
     private async void Change(Order order, ChangeEventArgs x)
@@ -93,4 +120,38 @@ else
     {
         gs.OnGroupReload -= GsOnOnGroupReload;
     }
+
+    private void Paid(Person person)
+    {
+        gs.ReloadRestriction.WaitOne();
+        Payment payment = new Payment();
+        payment.PaymentConfirmed = true;
+        payment.Person = person;
+        payment.PaymentMethod = PaymentMethod.Other;
+        payment.PaymentNote = "Payment added by group leader";
+        payment.Amount = person.GetPriceToPay();
+        gs.AddPayment(payment, person);
+        gs.Save();
+        gs.ReloadRestriction.Release();
+    }
+    
+    private void PaidBack(Person person)
+    {
+        gs.ReloadRestriction.WaitOne();
+        Payment payment = new Payment();
+        payment.PaymentConfirmed = true;
+        payment.Person = person;
+        payment.PaymentMethod = PaymentMethod.Refund;
+        payment.PaymentNote = "Payment added by group leader";
+        payment.Amount = person.GetPriceToPay();
+        gs.AddPayment(payment, person);
+        gs.Save();
+        gs.ReloadRestriction.Release();
+    }
 }
+
+<style>
+    .payment-unconfirmed {
+        color: yellow;
+    }
+</style>

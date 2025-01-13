@@ -47,7 +47,7 @@
                 {
                     <td>
                         @order.GetPrice()€
-                        @if (order.PaymentStatus == PaymentStatus.Paid)
+                        @if (order.Person.GetPriceToPay(true) <= 0)
                         {
                             <span style="color: green"> (Paid)</span>
                         }

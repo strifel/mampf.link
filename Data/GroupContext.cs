@@ -9,6 +9,7 @@ public class GroupContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<Person> Persons { get; set; }
     
+    public DbSet<Payment> Payments { get; set; }
     public DbSet<VanityURL> VanityUrls { get; set; }
     private string DbPath { get; }
 

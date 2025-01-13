@@ -33,6 +33,10 @@ public interface IGroupService {
     // Needs a save afterwards
     public void DeleteOrder(Order order);
 
+    // Delete specific payment from group
+    // Needs a save afterwards
+    public void DeletePayment(Payment payment);
+
     // Adds a specific person to the group
     // Needs a save afterwards
     public void AddPerson(Person person);
@@ -45,6 +49,11 @@ public interface IGroupService {
     // order is from person person
     // Needs a save afterwards
     public void AddOrder(Order order, Person person);
+    
+    // Adds a specific payment to the group
+    // order is from person person
+    // Needs a save afterwards
+    public void AddPayment(Payment payment, Person person);
     
     // Saves the changes to the group
     public Task Save();

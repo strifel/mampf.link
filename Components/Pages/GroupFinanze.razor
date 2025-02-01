@@ -104,17 +104,6 @@ else
         }
         return persons;
     }
-
-    private async void Change(Order order, ChangeEventArgs x)
-    {
-        if (Enum.TryParse(x.Value as string, out PaymentStatus status))
-        {
-            gs.ReloadRestriction.WaitOne();
-            order.PaymentStatus = status;
-            await gs.Save();
-            gs.ReloadRestriction.Release();
-        }
-    }
     
     public void Dispose()
     {

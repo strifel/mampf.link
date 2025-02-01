@@ -24,10 +24,6 @@ public class Order
     
     [Required]
     public int? Price { get; set; } // in cent
-    
-    [Required]
-    [DefaultValue(PaymentStatus.Unpaid)]
-    public PaymentStatus PaymentStatus { get; set; }
 
     public String GetPrice()
     {
@@ -38,12 +34,4 @@ public class Order
     {
         return (price / 100) + "." + $"{price % 100:D2}";
     }
-}
-
-public enum PaymentStatus
-{
-    Unpaid,
-    PaymentPending,
-    Paid,
-    NoPayment
 }

@@ -33,8 +33,7 @@
             case EditingRule.AllowBeforeCartAndPaymentAndDeadline:
                 return !IsOrderingClosed() &&
                        Order.AddedToCart == false &&
-                       Order.PaymentStatus != PaymentStatus.PaymentPending &&
-                       Order.PaymentStatus != PaymentStatus.Paid;
+                       Order.Person.GetPriceToPay() - Order.Price >= 0;
             case EditingRule.AskEverytime:
                 return false; //TODO
             case EditingRule.NeverAllow:

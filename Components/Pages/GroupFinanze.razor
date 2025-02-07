@@ -11,17 +11,19 @@
 
 @layout AppLayout
 
-@inject NavigationManager nm
-@inject IGroupService gs
-@inject IAdminService adminService
+@inject NavigationManager NavManager
+@inject IGroupService GroupService
+@inject IAdminService AdminService
 
-<PageTitle>Mampf.Link @gs.Group?.GroupName Finances</PageTitle>
+<PageTitle>Mampf.Link @GroupService.Group?.GroupName Finances</PageTitle>
 
-@if (gs.Group != null && adminService.IsAdmin())
+@if (GroupService.Group != null && AdminService.IsAdmin())
 {
-    <h1>Finance Overview: @gs.Group?.GroupName</h1>
+    <h1>Finance Overview: @GroupService.Group?.GroupName</h1>
 
-    <InputCheckbox @bind-Value="HideConfirmedPaid" id="HideConfirmedPaid" /><label style="padding-left: 5px" for="HideConfirmedPaid">Show only payments that require attention</label>
+    <InputCheckbox @bind-Value="HideConfirmedPaid" id="HideConfirmedPaid"/>
+    <label style="padding-left: 5px" for="HideConfirmedPaid">Show only payments that require
+        attention</label>
 
     @foreach (Person person in GetPersons())
     {
@@ -34,35 +36,43 @@
                 }
                 @if (person.GetPriceToPay() > 0)
                 {
-                    <span style="color: red"> (Still owes @Order.GetPrice(person.GetPriceToPay())€)</span>
-                    <a class="float-end" href="javascript:" @onclick="() => Paid(person)">Paid up</a>
-                } 
+                    <span
+                        style="color: red"> (Still owes @Order.GetPrice(person.GetPriceToPay())€)</span>
+                    <a class="float-end" href="javascript:" @onclick="() => Paid(person)">Paid
+                        up</a>
+                }
                 @if (person.GetPriceToPay(requireConfirmed: true) < 0)
                 {
-                    <span style="color: orange"> (Overpaid @Order.GetPrice(person.GetPriceToPay())€)</span>
-                    <a class="float-end" href="javascript:" @onclick="() => PaidBack(person)">I paid back</a>
+                    <span
+                        style="color: orange"> (Overpaid @Order.GetPrice(person.GetPriceToPay())€)</span>
+                    <a class="float-end" href="javascript:" @onclick="() => PaidBack(person)">I paid
+                        back</a>
                 }
-                
+
             </div>
             <ul class="list-group list-group-flush">
-            @foreach (Payment payment in person.Payments)
-            {
-                <li class="list-group-item @((payment.PaymentConfirmed ?? false) ? "" : "payment-unconfirmed")">
-                    @Order.GetPrice(payment.Amount ?? 0)€ paid with @payment.PaymentMethod 
-                    @if (payment.PaymentNote != null)
-                    {
-                        <span> (Custom note: @payment.PaymentNote)</span>
-                    }
-                    @if (!(payment.PaymentConfirmed ?? true))
-                    {
-                        <a @onclick="() => { payment.PaymentConfirmed = true; gs.Save(); }" class="float-end" href="javascript:">Confirm</a>
-                    }
-                    else
-                    {
-                        <a @onclick="() => { payment.PaymentConfirmed = false; gs.Save(); }" class="float-end" href="javascript:">Un-Confirm</a>
-                    }
-                    <a style="margin-right: 3px;" @onclick="() => { gs.DeletePayment(payment); gs.Save(); }" class="float-end" href="javascript:">Delete</a>
-                </li>
+                @foreach (Payment payment in person.Payments)
+                {
+                    <li class="list-group-item @((payment.PaymentConfirmed ?? false) ? "" : "payment-unconfirmed")">
+                        @Order.GetPrice(payment.Amount ?? 0)€ paid with @payment.PaymentMethod
+                        @if (payment.PaymentNote != null)
+                        {
+                            <span> (Custom note: @payment.PaymentNote)</span>
+                        }
+                        @if (!(payment.PaymentConfirmed ?? true))
+                        {
+                            <a @onclick="() => { payment.PaymentConfirmed = true; GroupService.Save(); }"
+                               class="float-end" href="javascript:">Confirm</a>
+                        }
+                        else
+                        {
+                            <a @onclick="() => { payment.PaymentConfirmed = false; GroupService.Save(); }"
+                               class="float-end" href="javascript:">Un-Confirm</a>
+                        }
+                        <a style="margin-right: 3px;"
+                           @onclick="() => { GroupService.DeletePayment(payment); GroupService.Save(); }"
+                           class="float-end" href="javascript:">Delete</a>
+                    </li>
                 }
             </ul>
         </div>
@@ -70,7 +80,7 @@
 }
 else
 {
-    <FourZeroThreeError />
+    <FourZeroThreeError/>
 }
 
 <style>

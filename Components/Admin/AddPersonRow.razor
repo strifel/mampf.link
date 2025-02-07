@@ -1,11 +1,11 @@
-@using GroupOrder.Data
 @using GroupOrder.Services.Common
 
-@inject IGroupService gs
+@inject IGroupService GroupService
 
 <tr>
     <td>
-        <InputText min-length="1" max-length="100" placeholder="Name" class="form-control" @bind-Value="PersonName"/>
+        <InputText min-length="1" max-length="100" placeholder="Name" class="form-control"
+                   @bind-Value="PersonName"/>
     </td>
     <td></td>
     <td></td>

@@ -22,8 +22,8 @@ public partial class GroupOverview
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        nm.LocationChanged += HandleLocationChanged;
-        gs.OnGroupReload += HandleGroupChanged;
+        NavManager.LocationChanged += HandleLocationChanged;
+        GroupService.OnGroupReload += HandleGroupChanged;
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
@@ -38,7 +38,7 @@ public partial class GroupOverview
 
     private async void ChangeTitle(ChangeEventArgs x)
     {
-        if (x.Value is string && gs.Group != null)
+        if (x.Value is string && GroupService.Group != null)
         {
             newTitle = (string)x.Value;
         }
@@ -48,24 +48,24 @@ public partial class GroupOverview
     {
         if (newTitle == null || newTitle.Length <= 0 || newTitle.Length > 100)
         {
-            gs.ReloadRestriction.Release();
+            GroupService.ReloadRestriction.Release();
             fail = true;
             return;
         }
 
-        if (gs.Group != null)
+        if (GroupService.Group != null)
         {
-            gs.Group.GroupName = newTitle;
-            await gs.Save();
+            GroupService.Group.GroupName = newTitle;
+            await GroupService.Save();
             fail = false;
         }
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
     }
 
     private async void ChangeDescription(ChangeEventArgs x)
     {
-        if (x.Value is string && gs.Group != null)
+        if (x.Value is string && GroupService.Group != null)
         {
             newDescription = (string)x.Value;
         }
@@ -75,24 +75,24 @@ public partial class GroupOverview
     {
         if (newDescription == null || newDescription.Length > 500)
         {
-            gs.ReloadRestriction.Release();
+            GroupService.ReloadRestriction.Release();
             fail = true;
             return;
         }
 
-        if (gs.Group != null)
+        if (GroupService.Group != null)
         {
-            gs.Group.Description = newDescription;
-            await gs.Save();
+            GroupService.Group.Description = newDescription;
+            await GroupService.Save();
             fail = false;
         }
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
     }
 
     private async void ChangeMenuURL(ChangeEventArgs x)
     {
-        if (x.Value is string && gs.Group != null)
+        if (x.Value is string && GroupService.Group != null)
         {
             newMenuURL = (string)x.Value;
         }
@@ -102,24 +102,24 @@ public partial class GroupOverview
     {
         if (newMenuURL != null && !Uri.IsWellFormedUriString(newMenuURL, UriKind.Absolute))
         {
-            gs.ReloadRestriction.Release();
+            GroupService.ReloadRestriction.Release();
             fail = true;
             return;
         }
 
-        if (gs.Group != null)
+        if (GroupService.Group != null)
         {
-            gs.Group.MenuUrl = newMenuURL;
-            await gs.Save();
+            GroupService.Group.MenuUrl = newMenuURL;
+            await GroupService.Save();
             fail = false;
         }
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
     }
 
     private async void ChangeDeadline(ChangeEventArgs x)
     {
-        if (x.Value is String && gs.Group != null)
+        if (x.Value is String && GroupService.Group != null)
         {
             newDeadline = DateTime.Parse((string)x.Value!);
         }
@@ -127,32 +127,32 @@ public partial class GroupOverview
 
     private async void SaveDeadline()
     {
-        if (gs.Group != null)
+        if (GroupService.Group != null)
         {
-            gs.Group.ClosingTime = newDeadline;
-            await gs.Save();
+            GroupService.Group.ClosingTime = newDeadline;
+            await GroupService.Save();
         }
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
     }
 
     private void Delete(Order order)
     {
-        gs.ReloadRestriction.WaitOne();
-        gs.DeleteOrder(order);
-        gs.Save();
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.WaitOne();
+        GroupService.DeleteOrder(order);
+        GroupService.Save();
+        GroupService.ReloadRestriction.Release();
     }
 
     private void AddToOrder()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
         {
             fail = true;
             return;
         }
 
-        if (gs.Group!.PaymentType != PaymentType.NoPrices && OrderPrice is null or < 0)
+        if (GroupService.Group!.PaymentType != PaymentType.NoPrices && OrderPrice is null or < 0)
         {
             fail = true;
             return;
@@ -174,9 +174,9 @@ public partial class GroupOverview
 
         if (OrderPersonId == null)
         {
-            if (gs.Group.Persons.Count > 0)
+            if (GroupService.Group.Persons.Count > 0)
             {
-                order.Person = gs.Group.Persons.First();
+                order.Person = GroupService.Group.Persons.First();
             }
             else
             {
@@ -186,7 +186,7 @@ public partial class GroupOverview
         }
         else
         {
-            order.Person = gs.Group.Persons.Single((person) => person.Id == OrderPersonId);
+            order.Person = GroupService.Group.Persons.Single((person) => person.Id == OrderPersonId);
         }
 
         if (OrderPrice != null)
@@ -194,17 +194,17 @@ public partial class GroupOverview
             order.Price = (int)(OrderPrice! * 100);
         }
 
-        gs.ReloadRestriction.WaitOne();
-        gs.AddOrder(order, order.Person);
-        gs.Save();
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.WaitOne();
+        GroupService.AddOrder(order, order.Person);
+        GroupService.Save();
+        GroupService.ReloadRestriction.Release();
 
         fail = false;
     }
 
     public void Dispose()
     {
-        nm.LocationChanged -= HandleLocationChanged;
-        gs.OnGroupReload -= HandleGroupChanged;
+        NavManager.LocationChanged -= HandleLocationChanged;
+        GroupService.OnGroupReload -= HandleGroupChanged;
     }
 }

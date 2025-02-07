@@ -69,7 +69,7 @@ public partial class GroupAdd
         context.Add(Order!);
         context.SaveChanges();
         Saved = true;
-        await gs.ReloadGroup();
+        await GroupService.ReloadGroup();
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)

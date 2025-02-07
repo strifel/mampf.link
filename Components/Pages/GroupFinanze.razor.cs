@@ -13,22 +13,22 @@ public partial class GroupFinanze
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        gs.OnGroupReload += GsOnOnGroupReload;
+        GroupService.OnGroupReload += GroupServiceOnGroupReload;
     }
 
-    private void GsOnOnGroupReload(object? sender, EventArgs e)
+    private void GroupServiceOnGroupReload(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
     }
 
     private IEnumerable<Person> GetPersons()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
         {
             return [];
         }
 
-        IEnumerable<Person> persons = gs.Group!.Persons;
+        IEnumerable<Person> persons = GroupService.Group!.Persons;
         persons = persons
             .Where(p => p.Orders.Sum(x => x.Price) != 0 || p.Payments.Count != 0)
             .OrderBy(x => x.Name);
@@ -42,34 +42,34 @@ public partial class GroupFinanze
 
     public void Dispose()
     {
-        gs.OnGroupReload -= GsOnOnGroupReload;
+        GroupService.OnGroupReload -= GroupServiceOnGroupReload;
     }
 
     private void Paid(Person person)
     {
-        gs.ReloadRestriction.WaitOne();
+        GroupService.ReloadRestriction.WaitOne();
         Payment payment = new Payment();
         payment.PaymentConfirmed = true;
         payment.Person = person;
         payment.PaymentMethod = PaymentMethod.Other;
         payment.PaymentNote = "Payment added by group leader";
         payment.Amount = person.GetPriceToPay();
-        gs.AddPayment(payment, person);
-        gs.Save();
-        gs.ReloadRestriction.Release();
+        GroupService.AddPayment(payment, person);
+        GroupService.Save();
+        GroupService.ReloadRestriction.Release();
     }
 
     private void PaidBack(Person person)
     {
-        gs.ReloadRestriction.WaitOne();
+        GroupService.ReloadRestriction.WaitOne();
         Payment payment = new Payment();
         payment.PaymentConfirmed = true;
         payment.Person = person;
         payment.PaymentMethod = PaymentMethod.Refund;
         payment.PaymentNote = "Payment added by group leader";
         payment.Amount = person.GetPriceToPay();
-        gs.AddPayment(payment, person);
-        gs.Save();
-        gs.ReloadRestriction.Release();
+        GroupService.AddPayment(payment, person);
+        GroupService.Save();
+        GroupService.ReloadRestriction.Release();
     }
 }

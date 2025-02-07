@@ -10,8 +10,8 @@
 
 @layout AppLayout
 
-@inject IGroupService gs
-@inject IAdminService adminService
+@inject IGroupService GroupService
+@inject IAdminService AdminService
 @inject IDbContextFactory<GroupContext> DbFactory
 
 
@@ -20,7 +20,7 @@
 <h1>Add Food manually as an group leader</h1>
 <p>Only use if it is really required as it is quite legacy and could produce bugs.</p>
 
-@if (adminService.IsAdmin())
+@if (AdminService.IsAdmin())
 {
     @if (!Saved)
     {
@@ -41,15 +41,18 @@
             <div class="form-group">
                 <label>
                     Price (Euro):
-                    <InputNumber step="0.01" placeholder="10.00" class="form-control" @bind-Value="Price"/>
+                    <InputNumber step="0.01" placeholder="10.00" class="form-control"
+                                 @bind-Value="Price"/>
                 </label>
-            </div><br/>
+            </div>
+            <br/>
             <div>
                 <ValidationMessage For="() => Order!"/>
             </div>
             <button class="btn btn-primary" type="submit">Submit</button>
         </EditForm>
     }
+
     @if (Saved)
     {
         <h3>Erfolgreich eingetragen.</h3>
@@ -58,5 +61,5 @@
 }
 else
 {
-    <FourZeroThreeError />
+    <FourZeroThreeError/>
 }

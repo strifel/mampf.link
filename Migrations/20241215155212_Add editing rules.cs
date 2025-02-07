@@ -15,15 +15,14 @@ namespace GroupOrder.Migrations
                 table: "Groups",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "EditingRule",
-                table: "Groups");
+            migrationBuilder.DropColumn(name: "EditingRule", table: "Groups");
         }
     }
 }

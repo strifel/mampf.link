@@ -15,15 +15,14 @@ namespace GroupOrder.Migrations
                 table: "Orders",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AddedToCart",
-                table: "Orders");
+            migrationBuilder.DropColumn(name: "AddedToCart", table: "Orders");
         }
     }
 }

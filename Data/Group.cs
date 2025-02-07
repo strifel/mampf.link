@@ -15,48 +15,64 @@ public class Group
     public string? GroupName { get; set; }
 
     [Required]
-    [StringLength(100, ErrorMessage = "Slug cannot exceed 100 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Slug may only contain a-z, numbers and dashes.")]
+    [
+        StringLength(100, ErrorMessage = "Slug cannot exceed 100 characters."),
+        RegularExpression(
+            "[a-z0-9-]+",
+            ErrorMessage = "Slug may only contain a-z, numbers and dashes."
+        )
+    ]
     public string? GroupSlug { get; set; }
-    
+
     [Required]
-    [StringLength(15, ErrorMessage = "Code cannot exceed 15 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Slug may only contain a-z and numbers.")]
+    [
+        StringLength(15, ErrorMessage = "Code cannot exceed 15 characters."),
+        RegularExpression("[a-z0-9-]+", ErrorMessage = "Slug may only contain a-z and numbers.")
+    ]
     public string? AdminCode { get; set; }
-    
+
     [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
     public string? Description { get; set; }
-    
-    [StringLength(30, ErrorMessage = "PaypalUsername cannot exceed 30 characters."), RegularExpression("[a-z0-9-]+", ErrorMessage = "Paypal Username may only contain a-z and numbers.")]
+
+    [
+        StringLength(30, ErrorMessage = "PaypalUsername cannot exceed 30 characters."),
+        RegularExpression(
+            "[a-z0-9-]+",
+            ErrorMessage = "Paypal Username may only contain a-z and numbers."
+        )
+    ]
     public string? PaypalUsername { get; set; }
-    
+
     [StringLength(100, ErrorMessage = "MenuURL cannot exceed 100 characters.")]
     public string? MenuURL { get; set; }
-    
+
     [Required]
     public DateTime? ClosingTime { get; set; }
-    
+
     public ICollection<Order> Orders { get; } = new List<Order>();
     public ICollection<Person> Persons { get; } = new List<Person>();
-    
+
     [Required]
     [DefaultValue(PaymentType.PAY)]
     public PaymentType PaymentType { get; set; }
-    
+
     [Required]
     [DefaultValue(Data.EditingRule.NeverAllow)]
     public EditingRule EditingRule { get; set; }
-    
 }
 
-public enum PaymentType {
+public enum PaymentType
+{
     PAY,
     NO_NEED_TO_PAY,
-    NO_PRICES
+    NO_PRICES,
 }
 
-public enum EditingRule {
+public enum EditingRule
+{
     AllowBeforeDeadline,
     AllowBeforeCartAndDeadline,
     AllowBeforeCartAndPaymentAndDeadline,
     AskEverytime, //TODO implement pending deletes
-    NeverAllow
+    NeverAllow,
 }

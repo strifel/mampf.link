@@ -16,15 +16,14 @@ namespace GroupOrder.Migrations
                 table: "Groups",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ClosingTime",
-                table: "Groups");
+            migrationBuilder.DropColumn(name: "ClosingTime", table: "Groups");
         }
     }
 }

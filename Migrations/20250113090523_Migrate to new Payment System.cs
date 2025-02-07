@@ -14,13 +14,18 @@ namespace GroupOrder.Migrations
                 name: "Payments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table
+                        .Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PersonId = table.Column<int>(type: "INTEGER", nullable: false),
                     Amount = table.Column<int>(type: "INTEGER", nullable: false),
                     PaymentConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
                     PaymentMethod = table.Column<int>(type: "INTEGER", nullable: false),
-                    PaymentNote = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
+                    PaymentNote = table.Column<string>(
+                        type: "TEXT",
+                        maxLength: 100,
+                        nullable: true
+                    ),
                 },
                 constraints: table =>
                 {
@@ -30,13 +35,15 @@ namespace GroupOrder.Migrations
                         column: x => x.PersonId,
                         principalTable: "Persons",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.Sql(
                 "INSERT INTO Payments (PersonId, Amount, PaymentConfirmed, PaymentMethod) SELECT PersonId, Price, (PaymentStatus == 2), 4 FROM orders WHERE PaymentStatus == 1 OR PaymentStatus == 2"
             );
-            
+
             migrationBuilder.Sql(
                 "INSERT INTO Payments (PersonId, Amount, PaymentConfirmed, PaymentMethod) SELECT PersonId, Price, 0, 5 FROM orders WHERE PaymentStatus == 3"
             );
@@ -44,14 +51,14 @@ namespace GroupOrder.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_PersonId",
                 table: "Payments",
-                column: "PersonId");
+                column: "PersonId"
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Payments");
+            migrationBuilder.DropTable(name: "Payments");
         }
     }
 }

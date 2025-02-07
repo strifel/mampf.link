@@ -16,15 +16,14 @@ namespace GroupOrder.Migrations
                 type: "TEXT",
                 maxLength: 15,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AdminCode",
-                table: "Groups");
+            migrationBuilder.DropColumn(name: "AdminCode", table: "Groups");
         }
     }
 }

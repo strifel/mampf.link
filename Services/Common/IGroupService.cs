@@ -13,6 +13,8 @@ public interface IGroupService
     // Returns the group that is currently loaded
     public Group? CurrentGroup { get; }
 
+    public Person? CurrentPerson { get; }
+
     // Loads group by slug
     // Does not reload if the slug is the same
     public Task LoadGroup(String slug);
@@ -37,7 +39,7 @@ public interface IGroupService
 
     // Returns the current instance of a specific person by ID
     // ReSharper disable once InconsistentNaming
-    public Person? GetPersonByID(int id);
+    public Person? SetCurrentPersonId(int id);
 
     // Adds a specific order to the group
     // order is from person person

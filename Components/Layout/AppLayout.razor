@@ -1,41 +1,9 @@
 ﻿@using GroupOrder.Services.Common
 @using GroupOrder.Components.Error
 @inherits LayoutComponentBase
-@inject NavigationManager nm
-@inject IAdminService adminService
-@inject IGroupService gs
-
-@code {
-    [CascadingParameter]
-    RouteData? RouteData { get; set; }
-
-
-    protected override async Task OnParametersSetAsync()
-    {
-        adminService.Initialize();
-        if (RouteData?.RouteValues.ContainsKey("GroupSlug") == true)
-        {
-            await gs.LoadGroup((string)RouteData?.RouteValues.GetValueOrDefault("GroupSlug")!);
-            StateHasChanged();
-        }
-        await base.OnParametersSetAsync();
-        nm.LocationChanged += HandleLocationChanged;
-        adminService.CodeChanged += HandleCodeChanged;
-    }
-
-    async void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
-    {
-        if (RouteData?.RouteValues.ContainsKey("GroupSlug") != true) return; // TODO clear
-        await gs.LoadGroup((string)RouteData?.RouteValues.GetValueOrDefault("GroupSlug")!);
-        StateHasChanged();
-    }
-    
-    async void HandleCodeChanged(object? sender, EventArgs e)
-    {
-        await gs.ReloadGroup();
-        StateHasChanged();
-    }
-}
+@inject NavigationManager NavManager
+@inject IAdminService AdminService
+@inject IGroupService GroupService
 
 <header data-bs-theme="dark">
     <div class="navbar navbar-expand-lg bg-body-secondary shadow-sm">
@@ -43,15 +11,15 @@
             <a href="#" class="navbar-brand d-flex align-items-center">
                 <strong>Mampf.Link</strong>
             </a>
-        @if (adminService.IsAdmin())
-        {
-            <NavMenu></NavMenu>
-        }
+            @if (AdminService.IsAdmin())
+            {
+                <NavMenu></NavMenu>
+            }
         </div>
     </div>
 </header>
 
-@if (gs.Group != null)
+@if (GroupService.Group != null)
 {
     <main>
         <section class="py-5 container">
@@ -59,11 +27,11 @@
         </section>
     </main>
 }
-else if (gs.Loading)
+else if (GroupService.Loading)
 {
     <p>Still loading, please wait...</p>
 }
-else if (gs.NotFound)
+else if (GroupService.NotFound)
 {
     <FourZeroFourError/>
 }

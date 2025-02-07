@@ -16,7 +16,8 @@ public partial class MyOrder
     private bool NoPerson { get; set; } = false;
     private PaymentMethod? SelectedPaymentMethod;
 
-    [Parameter] public string? GroupSlug { get; set; }
+    [Parameter]
+    public string? GroupSlug { get; set; }
 
     protected override void OnInitialized()
     {
@@ -38,8 +39,9 @@ public partial class MyOrder
         // this needs to be done here because it uses javascript interop
         if (gs.Group != null && _personId == null)
         {
-            var personId =
-                await ProtectedLocalStorage.GetAsync<int>("grouporder_person_" + gs.Group.Id);
+            var personId = await ProtectedLocalStorage.GetAsync<int>(
+                "grouporder_person_" + gs.Group.Id
+            );
             if (personId.Success)
             {
                 _personId = personId.Value;
@@ -57,8 +59,10 @@ public partial class MyOrder
 
     private async void Paid()
     {
-        if (_personId == null) return;
-        if (SelectedPaymentMethod == null) return;
+        if (_personId == null)
+            return;
+        if (SelectedPaymentMethod == null)
+            return;
         int paid = GetPriceToPay();
         gs.ReloadRestriction.WaitOne();
         Person? person = gs.GetPersonByID(_personId.Value);
@@ -83,9 +87,12 @@ public partial class MyOrder
 
     private int GetPriceToPay()
     {
-        if (_personId == null) return 0;
-        if (gs.Group == null) return 0;
-        if (gs.Group.PaymentType != PaymentType.PAY) return 0;
+        if (_personId == null)
+            return 0;
+        if (gs.Group == null)
+            return 0;
+        if (gs.Group.PaymentType != PaymentType.PAY)
+            return 0;
         Person? person = gs.GetPersonByID(_personId.Value);
         if (person == null)
         {
@@ -97,17 +104,16 @@ public partial class MyOrder
 
     private void CreatePerson()
     {
-        if (gs.Group == null) return;
-        if (NewName == null) return;
-        if (NewName.Length is > 100 or 0) return;
+        if (gs.Group == null)
+            return;
+        if (NewName == null)
+            return;
+        if (NewName.Length is > 100 or 0)
+            return;
 
         gs.ReloadRestriction.WaitOne();
 
-        Person person = new Person
-        {
-            Group = gs.Group,
-            Name = NewName
-        };
+        Person person = new Person { Group = gs.Group, Name = NewName };
 
         gs.AddPerson(person);
         gs.Save();
@@ -119,15 +125,16 @@ public partial class MyOrder
         ProtectedLocalStorage.SetAsync("grouporder_person_" + gs.Group.Id, person.Id);
     }
 
-    private void HandleValidationRequested(object? sender,
-        ValidationRequestedEventArgs args)
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
         messageStore?.Clear();
 
         if (string.IsNullOrEmpty(OrderFood) || OrderFood.Length > 100)
         {
-            messageStore?.Add(() => editContext!,
-                "You must enter a Food Choice between 1 and 100 chars.");
+            messageStore?.Add(
+                () => editContext!,
+                "You must enter a Food Choice between 1 and 100 chars."
+            );
         }
 
         if (gs.Group is null || gs.Group.PaymentType != PaymentType.NO_PRICES)
@@ -153,7 +160,8 @@ public partial class MyOrder
 
     private async void AddToOrder()
     {
-        if (_personId == null) return;
+        if (_personId == null)
+            return;
         gs.ReloadRestriction.WaitOne();
         Person? person = gs.GetPersonByID(_personId.Value);
         if (person == null)
@@ -162,10 +170,7 @@ public partial class MyOrder
             return;
         }
 
-        Order newOrder = new()
-        {
-            Food = OrderFood!
-        };
+        Order newOrder = new() { Food = OrderFood! };
 
         if (gs.Group!.PaymentType != PaymentType.NO_PRICES)
         {
@@ -182,7 +187,6 @@ public partial class MyOrder
             payment.PaymentConfirmed = false;
             gs.AddPayment(payment, person);
         }
-
 
         gs.AddOrder(newOrder, person);
         await gs.Save();

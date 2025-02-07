@@ -5,7 +5,8 @@ namespace GroupOrder.Components.Pages;
 
 public partial class GroupFinanze
 {
-    [Parameter] public string? GroupSlug { get; set; }
+    [Parameter]
+    public string? GroupSlug { get; set; }
 
     private bool HideConfirmedPaid = false;
 
@@ -28,7 +29,8 @@ public partial class GroupFinanze
         }
 
         IEnumerable<Person> persons = gs.Group!.Persons;
-        persons = persons.Where(p => p.Orders.Sum(x => x.Price) != 0 || p.Payments.Count != 0)
+        persons = persons
+            .Where(p => p.Orders.Sum(x => x.Price) != 0 || p.Payments.Count != 0)
             .OrderBy(x => x.Name);
         if (HideConfirmedPaid)
         {

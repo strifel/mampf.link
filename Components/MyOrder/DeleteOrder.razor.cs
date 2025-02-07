@@ -5,7 +5,8 @@ namespace GroupOrder.Components.MyOrder;
 
 public partial class DeleteOrder
 {
-    [Parameter] public Order? Order { get; set; }
+    [Parameter]
+    public Order? Order { get; set; }
 
     /**
      * This component is purely for user view and therefore allows
@@ -13,8 +14,10 @@ public partial class DeleteOrder
      */
     private bool CanEdit()
     {
-        if (gs.Group == null) return false;
-        if (Order == null) return false;
+        if (gs.Group == null)
+            return false;
+        if (Order == null)
+            return false;
         switch (gs.Group.EditingRule)
         {
             case EditingRule.AllowBeforeDeadline:
@@ -22,9 +25,9 @@ public partial class DeleteOrder
             case EditingRule.AllowBeforeCartAndDeadline:
                 return !IsOrderingClosed() && Order.AddedToCart == false;
             case EditingRule.AllowBeforeCartAndPaymentAndDeadline:
-                return !IsOrderingClosed() &&
-                       Order.AddedToCart == false &&
-                       Order.Person.GetPriceToPay() - Order.Price >= 0;
+                return !IsOrderingClosed()
+                    && Order.AddedToCart == false
+                    && Order.Person.GetPriceToPay() - Order.Price >= 0;
             case EditingRule.AskEverytime:
                 return false; //TODO
             case EditingRule.NeverAllow:

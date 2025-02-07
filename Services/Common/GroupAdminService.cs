@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 
-public class GroupAdminService(NavigationManager navManager, IGroupService groupService) : IAdminService
+public class GroupAdminService(NavigationManager navManager, IGroupService groupService)
+    : IAdminService
 {
     private string? _adminCode;
     private bool _initialized = false;
@@ -44,7 +45,9 @@ public class GroupAdminService(NavigationManager navManager, IGroupService group
     {
         if (
             navManager.Uri.Contains("?")
-            && QueryHelpers.ParseQuery(navManager.Uri.Split("?")[1]).TryGetValue("admin", out var code)
+            && QueryHelpers
+                .ParseQuery(navManager.Uri.Split("?")[1])
+                .TryGetValue("admin", out var code)
         )
         {
             _adminCode = code;

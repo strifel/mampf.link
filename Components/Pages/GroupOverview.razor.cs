@@ -6,7 +6,8 @@ namespace GroupOrder.Components.Pages;
 
 public partial class GroupOverview
 {
-    [Parameter] public string? GroupSlug { get; set; }
+    [Parameter]
+    public string? GroupSlug { get; set; }
 
     private string? newTitle;
     private string? newDescription;
@@ -169,10 +170,7 @@ public partial class GroupOverview
             return;
         }
 
-        Order order = new()
-        {
-            Food = OrderFood
-        };
+        Order order = new() { Food = OrderFood };
 
         if (OrderPersonId == null)
         {

@@ -5,7 +5,8 @@ namespace GroupOrder.Components.Pages;
 
 public partial class LandingPage
 {
-    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
 
     private string? RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);

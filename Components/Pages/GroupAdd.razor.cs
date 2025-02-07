@@ -14,7 +14,8 @@ public partial class GroupAdd
     private String? Name { get; set; }
     private bool Saved { get; set; } = false;
 
-    [Parameter] public string? GroupSlug { get; set; }
+    [Parameter]
+    public string? GroupSlug { get; set; }
 
     protected override void OnInitialized()
     {
@@ -41,17 +42,18 @@ public partial class GroupAdd
 
         using var context = DbFactory.CreateDbContext();
 
-        Data.Group? group = await context.Groups
-            .SingleOrDefaultAsync(
-                c => c.GroupSlug == GroupSlug);
+        Data.Group? group = await context.Groups.SingleOrDefaultAsync(c =>
+            c.GroupSlug == GroupSlug
+        );
 
         if (group is null)
         {
             return;
         }
 
-        Person? person =
-            await context.Persons.FirstOrDefaultAsync(p => p.Group == group && p.Name == Name);
+        Person? person = await context.Persons.FirstOrDefaultAsync(p =>
+            p.Group == group && p.Name == Name
+        );
 
         if (person is null)
         {
@@ -70,8 +72,7 @@ public partial class GroupAdd
         await gs.ReloadGroup();
     }
 
-    private void HandleValidationRequested(object? sender,
-        ValidationRequestedEventArgs args)
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
         messageStore?.Clear();
 

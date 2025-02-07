@@ -55,7 +55,7 @@
             </svg>
             Manual Add (Legacy)
         </NavLink>
-        @if (GroupService.Group is { PaymentType: PaymentType.Pay })
+        @if (GroupService.CurrentGroup is { PaymentType: PaymentType.Pay })
         {
             <NavLink class="nav-link nav-item" href="@FinanceLink()" Match="NavLinkMatch.All">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"

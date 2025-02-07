@@ -25,10 +25,10 @@ public class GroupAdminService(NavigationManager navManager, IGroupService group
     {
         if (_adminCode == null)
             return false;
-        if (groupService.Group == null)
+        if (groupService.CurrentGroup == null)
             return false;
 
-        return groupService.Group.AdminCode == _adminCode;
+        return groupService.CurrentGroup.AdminCode == _adminCode;
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)

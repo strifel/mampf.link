@@ -17,26 +17,26 @@
 @inject IAdminService AdminService
 @inject IGroupService GroupService
 
-<PageTitle>Mampf.Link @GroupService.Group?.GroupName</PageTitle>
+<PageTitle>Mampf.Link @GroupService.CurrentGroup?.GroupName</PageTitle>
 
-@if (GroupService.Group != null && AdminService.IsAdmin())
+@if (GroupService.CurrentGroup != null && AdminService.IsAdmin())
 {
     <h1>Group Leader Overview:
         <InputText
-            @bind-Value="@GroupService.Group.GroupName"
+            @bind-Value="@GroupService.CurrentGroup.GroupName"
             @oninput="ChangeTitle"
-            @onfocusin="() => { newTitle = GroupService.Group.GroupName; GroupService.ReloadRestriction.WaitOne(); }"
+            @onfocusin="() => { newTitle = GroupService.CurrentGroup.GroupName; GroupService.ReloadRestriction.WaitOne(); }"
             @onfocusout="SaveTitle"/>
     </h1>
     <p>
         <a id="groupLink"
-           href="@NavManager.BaseUri.ToLower()group/@GroupService.Group!.GroupSlug">@NavManager.BaseUri.ToLower()group/@GroupService.Group!.GroupSlug</a>
+           href="@NavManager.BaseUri.ToLower()group/@GroupService.CurrentGroup!.GroupSlug">@NavManager.BaseUri.ToLower()group/@GroupService.CurrentGroup!.GroupSlug</a>
         <button class="btn btn-primary"
                 onclick="navigator.clipboard.writeText(document.getElementById('groupLink').href)">
             Copy Link
         </button>
         <button class="btn btn-secondary"
-                onclick="navigator.clipboard.writeText('We are ordering food🥘🍲🍕! \nLink to menu: ' + document.getElementById('menu_url').value + ' \nAdd your order here: '+document.getElementById('groupLink').href+' \nTaking orders until @GroupService.Group.ClosingTime!.Value')">
+                onclick="navigator.clipboard.writeText('We are ordering food🥘🍲🍕! \nLink to menu: ' + document.getElementById('menu_url').value + ' \nAdd your order here: '+document.getElementById('groupLink').href+' \nTaking orders until @GroupService.CurrentGroup.ClosingTime!.Value')">
             Copy Sharetext
         </button>
     </p>
@@ -45,9 +45,9 @@
         <InputDate
             id="closingTime"
             class="form-control"
-            @bind-Value="GroupService.Group!.ClosingTime"
+            @bind-Value="GroupService.CurrentGroup!.ClosingTime"
             @oninput="ChangeDeadline"
-            @onfocusin="() => { newDeadline = GroupService.Group.ClosingTime; GroupService.ReloadRestriction.WaitOne(); }"
+            @onfocusin="() => { newDeadline = GroupService.CurrentGroup.ClosingTime; GroupService.ReloadRestriction.WaitOne(); }"
             @onfocusout="SaveDeadline"
             type="@InputDateType.DateTimeLocal"
         />
@@ -55,9 +55,9 @@
 
     <p>Description:<br/>
         <InputTextArea
-            @bind-Value="@GroupService.Group.Description"
+            @bind-Value="@GroupService.CurrentGroup.Description"
             class="form-control"
-            @onfocusin="() => { newDescription = GroupService.Group.Description; GroupService.ReloadRestriction.WaitOne(); }"
+            @onfocusin="() => { newDescription = GroupService.CurrentGroup.Description; GroupService.ReloadRestriction.WaitOne(); }"
             @oninput="ChangeDescription"
             @onfocusout="SaveDescription"/>
     </p>
@@ -66,9 +66,9 @@
         <InputText
             id="menu_url"
             class="form-control"
-            @bind-Value="@GroupService.Group.MenuUrl"
+            @bind-Value="@GroupService.CurrentGroup.MenuUrl"
             @oninput="ChangeMenuURL"
-            @onfocusin="() => { newMenuURL = GroupService.Group.MenuUrl; GroupService.ReloadRestriction.WaitOne(); }"
+            @onfocusin="() => { newMenuURL = GroupService.CurrentGroup.MenuUrl; GroupService.ReloadRestriction.WaitOne(); }"
             @onfocusout="SaveMenuURL"
         />
     </p>
@@ -108,7 +108,7 @@
         {
             <AddPersonRow OnAdded="() => {addPerson = false;}"/>
         }
-        @foreach (Order order in GroupService.Group!.Orders)
+        @foreach (Order order in GroupService.CurrentGroup!.Orders)
         {
             <tr>
                 <td>
@@ -142,7 +142,7 @@
             <td>
                 <InputSelect id="payment_type" class="form-select form-control"
                              @bind-Value="@OrderPersonId">
-                    @foreach (Person person in GroupService.Group.Persons)
+                    @foreach (Person person in GroupService.CurrentGroup.Persons)
                     {
                         <option value="@person.Id">@person.Name</option>
                     }
@@ -153,7 +153,7 @@
                            class="form-control" @bind-Value="OrderFood"/>
             </td>
             <td>
-                @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
+                @if (GroupService.CurrentGroup.PaymentType != PaymentType.NoPrices)
                 {
                     <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control"
                                  @bind-Value="OrderPrice"/>

@@ -15,11 +15,11 @@
 @inject IGroupService GroupService
 @inject IAdminService AdminService
 
-<PageTitle>Mampf.Link @GroupService.Group?.GroupName Finances</PageTitle>
+<PageTitle>Mampf.Link @GroupService.CurrentGroup?.GroupName Finances</PageTitle>
 
-@if (GroupService.Group != null && AdminService.IsAdmin())
+@if (GroupService.CurrentGroup != null && AdminService.IsAdmin())
 {
-    <h1>Finance Overview: @GroupService.Group?.GroupName</h1>
+    <h1>Finance Overview: @GroupService.CurrentGroup?.GroupName</h1>
 
     <InputCheckbox @bind-Value="HideConfirmedPaid" id="HideConfirmedPaid"/>
     <label style="padding-left: 5px" for="HideConfirmedPaid">Show only payments that require

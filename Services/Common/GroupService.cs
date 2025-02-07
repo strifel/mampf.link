@@ -11,28 +11,24 @@ public class GroupService(
     public event EventHandler? OnGroupReload;
 
     public Semaphore ReloadRestriction { get; } = new(1, 1);
-    public Group? Group { get; private set; }
+    public Group? CurrentGroup { get; private set; }
     private GroupContext? _context;
-
-    public bool Loading { get; private set; }
 
     // Loads group from database
     // Does not reload if the slug is the same
     public async Task LoadGroup(string slug)
     {
-        if (Group != null && slug == Group.GroupSlug)
+        if (CurrentGroup?.GroupSlug == slug)
             return;
 
         await ForceLoadGroup(slug);
     }
 
-    private async Task ForceLoadGroup(String slug)
+    private async Task ForceLoadGroup(string slug)
     {
-        Loading = true;
-
-        if (Group != null)
+        if (CurrentGroup != null)
         {
-            autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
+            autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated -= OnGroupUpdated;
         }
 
         if (_context != null)
@@ -40,20 +36,18 @@ public class GroupService(
 
         // Create a new Context to not have issues with other groups
         // still loaded
-        _context = dbFactory.CreateDbContext();
-        Group = await _context
+        _context = await dbFactory.CreateDbContextAsync();
+        CurrentGroup = await _context
             .Groups.Include(group => group.Orders)
             .ThenInclude(order => order.Person)
             .Include(group => group.Persons)
             .ThenInclude(person => person.Payments)
             .SingleOrDefaultAsync(c => c.GroupSlug == slug);
-        if (Group != null)
+        if (CurrentGroup != null)
         {
-            autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated += OnGroupUpdated;
+            autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated += OnGroupUpdated;
             Task.Run(() => { OnGroupReload?.Invoke(this, EventArgs.Empty); });
         }
-
-        Loading = false;
     }
 
     private void OnGroupUpdated(object? sender, EventArgs e)
@@ -67,10 +61,10 @@ public class GroupService(
     {
         if (_context == null)
             return;
-        if (Group == null)
+        if (CurrentGroup == null)
             return;
 
-        await ForceLoadGroup(Group.GroupSlug!);
+        await ForceLoadGroup(CurrentGroup.GroupSlug!);
     }
 
     public async Task ReloadOrder(Order order)
@@ -93,42 +87,44 @@ public class GroupService(
 
     public void AddPerson(Person person)
     {
-        if (Group == null)
+        if (CurrentGroup == null)
             return;
-        person.Group = Group;
+        person.Group = CurrentGroup;
         _context?.Add(person);
     }
 
     public Person? GetPersonByID(int id)
     {
-        return Group?.Persons.FirstOrDefault(p => p.Id == id);
+        return CurrentGroup?.Persons.FirstOrDefault(p => p.Id == id);
     }
 
     public void AddOrder(Order order, Person person)
     {
-        if (Group == null)
+        if (CurrentGroup == null)
             return;
-        order.Group = Group;
+        order.Group = CurrentGroup;
         order.Person = person;
-        if (Group != person.Group)
+        if (CurrentGroup != person.Group)
             throw new InvalidDataException("Person is not in the group");
         order.AddedToCart = false;
-        if (Group.PaymentType == PaymentType.NoPrices)
+        if (CurrentGroup.PaymentType == PaymentType.NoPrices)
         {
             order.Price = 0;
         }
+
         _context?.Add(order);
     }
 
     public void AddPayment(Payment payment, Person person)
     {
-        if (Group == null)
+        if (CurrentGroup == null)
             return;
         payment.Person = person;
-        if (Group.PaymentType != PaymentType.Pay)
+        if (CurrentGroup.PaymentType != PaymentType.Pay)
         {
             throw new InvalidDataException("Cant add Payment to Group without Payments");
         }
+
         _context?.Add(payment);
     }
 
@@ -139,23 +135,20 @@ public class GroupService(
 
         await _context.SaveChangesAsync();
 
-        Task.Run(() =>
-        {
-            autoreloadService.GetHandlerForGroup(Group!).Call();
-        });
+        Task.Run(() => { autoreloadService.GetHandlerForGroup(CurrentGroup!).Call(); });
     }
 
     public bool IsOrderingClosed()
     {
-        return DateTime.Now > Group!.ClosingTime;
+        return DateTime.Now > CurrentGroup!.ClosingTime;
     }
 
     public void Dispose()
     {
         _context?.Dispose();
-        if (Group != null)
+        if (CurrentGroup != null)
         {
-            autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
+            autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated -= OnGroupUpdated;
         }
     }
 }

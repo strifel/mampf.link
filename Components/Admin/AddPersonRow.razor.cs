@@ -12,7 +12,7 @@ public partial class AddPersonRow
 
     private async void AddPerson()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return;
         if (PersonName == null)
             return;
@@ -21,7 +21,7 @@ public partial class AddPersonRow
 
         GroupService.ReloadRestriction.WaitOne();
 
-        Person person = new Person { Group = GroupService.Group, Name = PersonName };
+        Person person = new Person { Group = GroupService.CurrentGroup, Name = PersonName };
 
         GroupService.AddPerson(person);
         await GroupService.Save();

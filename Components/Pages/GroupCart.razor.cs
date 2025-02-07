@@ -21,21 +21,21 @@ public partial class GroupCart
 
     private int CalculateTotalSum()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return 0;
-        return GroupService.Group.Orders.Sum(o => o.Price) ?? 0;
+        return GroupService.CurrentGroup.Orders.Sum(o => o.Price) ?? 0;
     }
 
     private int CalculateAddedSum()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return 0;
-        return GroupService.Group.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
+        return GroupService.CurrentGroup.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
     }
 
     private async void SetAdded(Order order)
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return;
         if (!AdminService.IsAdmin())
             return; // this theoretically should not happen
@@ -47,12 +47,12 @@ public partial class GroupCart
 
     private async void ResetCart()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return;
         if (!AdminService.IsAdmin())
             return; // this theoretically should not happen
         GroupService.ReloadRestriction.WaitOne();
-        foreach (Order order in GroupService.Group.Orders)
+        foreach (Order order in GroupService.CurrentGroup.Orders)
         {
             order.AddedToCart = false;
         }

@@ -14,11 +14,11 @@ public partial class DeleteOrder
      */
     private bool CanEdit()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return false;
         if (Order == null)
             return false;
-        switch (GroupService.Group.EditingRule)
+        switch (GroupService.CurrentGroup.EditingRule)
         {
             case EditingRule.AllowBeforeDeadline:
                 return !IsOrderingClosed();
@@ -39,7 +39,7 @@ public partial class DeleteOrder
 
     private bool IsOrderingClosed()
     {
-        return DateTime.Now > GroupService.Group!.ClosingTime;
+        return DateTime.Now > GroupService.CurrentGroup!.ClosingTime;
     }
 
     private void Delete()

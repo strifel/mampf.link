@@ -5,9 +5,9 @@
 <div class="row">
     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
         <h1>You are not authorized.</h1>
-        @if (GroupService.Group != null)
+        @if (GroupService.CurrentGroup != null)
         {
-            <h2>Go back to <a href="/group/@GroupService.Group?.GroupSlug">the My Order Page</a>.
+            <h2>Go back to <a href="/group/@GroupService.CurrentGroup?.GroupSlug">the My Order Page</a>.
             </h2>
         }
     </div>

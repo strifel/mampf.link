@@ -16,9 +16,6 @@ public interface IGroupService
     // Returns if the group is currently loading
     public bool Loading { get; }
 
-    // Returns if the group was not found
-    public bool NotFound { get; }
-
     // Loads group by slug
     // Does not reload if the slug is the same
     public Task LoadGroup(String slug);

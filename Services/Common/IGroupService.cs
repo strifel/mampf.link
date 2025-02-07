@@ -57,4 +57,6 @@ public interface IGroupService
 
     // Saves the changes to the group
     public Task Save();
+
+    public bool IsOrderingClosed();
 }

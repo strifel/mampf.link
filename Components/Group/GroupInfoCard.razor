@@ -1,0 +1,31 @@
+@using GroupOrder.Services.Common
+@inject IGroupService GroupService
+
+<div class="card">
+    <div class="card-header">
+        ℹ️ Group <i>@GroupService.Group.GroupName</i>
+    </div>
+    <div class="card-body">
+        @if (!GroupService.IsOrderingClosed())
+        {
+            <h5 class="card-title mb-2 text-body-secondary">
+                Ordering is closing at @GroupService.Group.ClosingTime!.Value
+            </h5>
+        }
+        else
+        {
+            <h5 class="card-title mb-2 text-danger">
+                Ordering has already closed
+            </h5>
+        }
+        <p class="card-text">
+            @GroupService.Group.Description
+        </p>
+        @if (GroupService.Group.MenuURL != null)
+        {
+            <a href="@GroupService.Group.MenuURL" target="_blank" class="btn btn-secondary">
+                🗺️ Visit Menu
+            </a>
+        }
+    </div>
+</div>

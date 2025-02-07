@@ -4,7 +4,7 @@ using Data;
 
 public interface IGroupAutoreloadService
 {
-    public GroupEventHandlerHolder getHandlerForGroup(Group group);
+    public GroupEventHandlerHolder GetHandlerForGroup(Group group);
 }
 
 public class GroupEventHandlerHolder

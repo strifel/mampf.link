@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace GroupOrder.Data;
 
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +14,10 @@ public class GroupContext : DbContext
 
     public GroupContext()
     {
-        System.IO.Directory.CreateDirectory(
-            System.IO.Path.Join(System.IO.Directory.GetCurrentDirectory(), "var/")
+        Directory.CreateDirectory(
+            Path.Join(Directory.GetCurrentDirectory(), "var/")
         );
-        DbPath = System.IO.Path.Join(System.IO.Directory.GetCurrentDirectory(), "var/groups.db");
+        DbPath = Path.Join(Directory.GetCurrentDirectory(), "var/groups.db");
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

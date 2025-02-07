@@ -54,7 +54,7 @@
                                 id="menu_url"
                                 placeholder=" "
                                 class="form-control"
-                                @bind-Value="Model!.MenuURL"/>
+                                @bind-Value="Model!.MenuUrl"/>
                             <label for="group_name">Menu URL (optional):</label>
                         </div>
                     </div>
@@ -72,14 +72,14 @@
                     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                         <div class="form-floating">
                             <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@Model.PaymentType">
-                                <option value="@PaymentType.PAY" default>Enabled</option>
-                                <option value="@PaymentType.NO_NEED_TO_PAY">Host pays everything</option>
-                                <option value="@PaymentType.NO_PRICES">Disabled</option>
+                                <option value="@PaymentType.Pay" default>Enabled</option>
+                                <option value="@PaymentType.NoNeedToPay">Host pays everything</option>
+                                <option value="@PaymentType.NoPrices">Disabled</option>
                             </InputSelect>
                             <label for="payment_type">Payments:</label>
                         </div>
                     </div>
-                    @if (Model!.PaymentType == PaymentType.PAY)
+                    @if (Model!.PaymentType == PaymentType.Pay)
                     {
                         <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                             <div class="form-floating">
@@ -107,7 +107,7 @@
                         <div class="form-floating">
                             <InputSelect id="editing_rule" class="form-select form-control" @bind-Value="@Model.EditingRule">
                                 <option value="@EditingRule.NeverAllow">Never (only Group Leader can edit)</option>
-                                @if (Model!.PaymentType == PaymentType.PAY)
+                                @if (Model!.PaymentType == PaymentType.Pay)
                                 {
                                     <option value="@EditingRule.AllowBeforeCartAndPaymentAndDeadline">If not in Cart, not paid and before Closing Time</option>
                                 }
@@ -284,17 +284,17 @@ else
             _messageStore?.Add(() => Model!, "Please select an Closing Time in the future.");
         }
         
-        if (Model!.MenuURL != null && !Uri.IsWellFormedUriString(Model!.MenuURL, UriKind.Absolute))
+        if (Model!.MenuUrl != null && !Uri.IsWellFormedUriString(Model!.MenuUrl, UriKind.Absolute))
         {
             _messageStore?.Add(() => Model!, "Please enter no or a valid url.");
         }
 
-        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndDeadline && Model!.PaymentType == PaymentType.PAY)
+        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndDeadline && Model!.PaymentType == PaymentType.Pay)
         {
             _messageStore?.Add(() => Model!, "Please select a valid Editing Rule.");
         }
         
-        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndPaymentAndDeadline && Model!.PaymentType != PaymentType.PAY)
+        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndPaymentAndDeadline && Model!.PaymentType != PaymentType.Pay)
         {
             _messageStore?.Add(() => Model!, "Please select a valid Editing Rule.");
         }

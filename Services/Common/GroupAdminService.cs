@@ -1,14 +1,12 @@
 namespace GroupOrder.Services.Common;
 
-using System.Diagnostics;
-using Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 
-public class GroupAdminService(NavigationManager nm, IGroupService groupService) : IAdminService
+public class GroupAdminService(NavigationManager navManager, IGroupService groupService) : IAdminService
 {
-    private String? _adminCode;
+    private string? _adminCode;
     private bool _initialized = false;
 
     public event EventHandler? CodeChanged;
@@ -17,7 +15,7 @@ public class GroupAdminService(NavigationManager nm, IGroupService groupService)
     {
         if (_initialized)
             return;
-        nm.LocationChanged += HandleLocationChanged;
+        navManager.LocationChanged += HandleLocationChanged;
         LoadAdminCode();
         _initialized = true;
     }
@@ -45,8 +43,8 @@ public class GroupAdminService(NavigationManager nm, IGroupService groupService)
     private void LoadAdminCode()
     {
         if (
-            nm.Uri.Contains("?")
-            && QueryHelpers.ParseQuery(nm.Uri.Split("?")[1]).TryGetValue("admin", out var code)
+            navManager.Uri.Contains("?")
+            && QueryHelpers.ParseQuery(navManager.Uri.Split("?")[1]).TryGetValue("admin", out var code)
         )
         {
             _adminCode = code;

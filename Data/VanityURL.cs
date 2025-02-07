@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GroupOrder.Data;
 
-using System.ComponentModel;
-
 [Index(nameof(Slug), IsUnique = true)]
 public class VanityURL
 {

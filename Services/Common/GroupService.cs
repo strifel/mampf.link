@@ -33,7 +33,7 @@ public class GroupService(
 
         if (Group != null)
         {
-            autoreloadService.getHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
+            autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
         }
 
         if (_context != null)
@@ -54,7 +54,7 @@ public class GroupService(
         }
         else
         {
-            autoreloadService.getHandlerForGroup(Group).OnGroupUpdated += OnGroupUpdated;
+            autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated += OnGroupUpdated;
             Task.Run(() =>
             {
                 OnGroupReload?.Invoke(this, EventArgs.Empty);
@@ -120,7 +120,7 @@ public class GroupService(
         if (Group != person.Group)
             throw new InvalidDataException("Person is not in the group");
         order.AddedToCart = false;
-        if (Group.PaymentType == PaymentType.NO_PRICES)
+        if (Group.PaymentType == PaymentType.NoPrices)
         {
             order.Price = 0;
         }
@@ -132,7 +132,7 @@ public class GroupService(
         if (Group == null)
             return;
         payment.Person = person;
-        if (Group.PaymentType != PaymentType.PAY)
+        if (Group.PaymentType != PaymentType.Pay)
         {
             throw new InvalidDataException("Cant add Payment to Group without Payments");
         }
@@ -148,7 +148,7 @@ public class GroupService(
 
         Task.Run(() =>
         {
-            autoreloadService.getHandlerForGroup(Group!).Call();
+            autoreloadService.GetHandlerForGroup(Group!).Call();
         });
     }
 
@@ -162,7 +162,7 @@ public class GroupService(
         _context?.Dispose();
         if (Group != null)
         {
-            autoreloadService.getHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
+            autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated -= OnGroupUpdated;
         }
     }
 }

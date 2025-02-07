@@ -26,9 +26,9 @@
                 <h1>Hi @gs.GetPersonByID(_personId.Value)?.Name</h1>
                 <h2>Welcome to @gs.Group.GroupName</h2>
                 <p>@gs.Group.Description</p>
-                @if (gs.Group.MenuURL != null)
+                @if (gs.Group.MenuUrl != null)
                 {
-                    <p>Menu is located at <a href="@gs.Group.MenuURL" target="_blank">@gs.Group.MenuURL</a></p>
+                    <p>Menu is located at <a href="@gs.Group.MenuUrl" target="_blank">@gs.Group.MenuUrl</a></p>
                 }
                 @if (!IsOrderingClosed())
                 {
@@ -62,7 +62,7 @@
                             <th>
                                 Food
                             </th>
-                            @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
+                            @if (gs.Group.PaymentType != PaymentType.NoPrices)
                             {
                                 <th>
                                     Price
@@ -80,7 +80,7 @@
                                     <td>
                                         @order.Food
                                     </td>
-                                    @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
+                                    @if (gs.Group.PaymentType != PaymentType.NoPrices)
                                     {
                                         <td>
                                             @order.GetPrice()€
@@ -103,7 +103,7 @@
                                     <td>
                                         @order.Food
                                     </td>
-                                    @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
+                                    @if (gs.Group.PaymentType != PaymentType.NoPrices)
                                     {
                                         <td>
                                             @order.GetPrice()€
@@ -130,7 +130,7 @@
                                 <td>
                                     <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
                                 </td>
-                                @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
+                                @if (gs.Group.PaymentType != PaymentType.NoPrices)
                                 {
                                     <td>
                                         <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
@@ -184,7 +184,7 @@
                         Please contact the group leader.
                     </p>
                 }
-                else if (gs.Group.PaymentType == PaymentType.NO_NEED_TO_PAY)
+                else if (gs.Group.PaymentType == PaymentType.NoNeedToPay)
                 {
                     <h2>Group leader pays!</h2>
                     <p>You are good to go!</p>
@@ -197,9 +197,9 @@
                 <h1>You are new to the group!</h1>
                 <h2>Enter your name to join @gs.Group.GroupName</h2>
                 <p>@gs.Group.Description</p>
-                @if (gs.Group.MenuURL != null)
+                @if (gs.Group.MenuUrl != null)
                 {
-                    <p>Menu is located at <a href="@gs.Group.MenuURL" target="_blank">@gs.Group.MenuURL</a></p>
+                    <p>Menu is located at <a href="@gs.Group.MenuUrl" target="_blank">@gs.Group.MenuUrl</a></p>
                 }
                 @if (!IsOrderingClosed())
                 {

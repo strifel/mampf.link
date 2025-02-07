@@ -1,0 +1,35 @@
+@using GroupOrder.Services.Common
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject IGroupService GroupService
+@inject ProtectedLocalStorage ProtectedLocalStorage
+
+<div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+    <h1>You are new to the group!</h1>
+    <h2>Enter your name to join @GroupService.CurrentGroup!.GroupName</h2>
+    <p>@GroupService.CurrentGroup.Description</p>
+    @if (GroupService.CurrentGroup.MenuUrl != null)
+    {
+        <p>Menu is located at <a href="@GroupService.CurrentGroup.MenuUrl"
+                                 target="_blank">@GroupService.CurrentGroup.MenuUrl</a></p>
+    }
+    @if (!GroupService.IsOrderingClosed())
+    {
+        <p>Ordering is closing at @GroupService.CurrentGroup.ClosingTime!.Value.</p>
+    }
+    else
+    {
+        <p><b>Ordering has already closed.</b></p>
+    }
+
+    <div class="form-floating" style="max-width: 300px;display: inline-block">
+        <InputText
+            id="group_name"
+            placeholder=" "
+            class="form-control"
+            @bind-Value="NewName"/>
+        <label for="group_name">Your name:</label>
+    </div>
+    <button class="btn btn-primary" @onclick="OnJoinClick" style="height: 58px">Join
+        Group!
+    </button>
+</div>

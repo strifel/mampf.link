@@ -37,10 +37,10 @@ public partial class MyOrder
     {
         // find local person
         // this needs to be done here because it uses javascript interop
-        if (GroupService.Group != null && _personId == null)
+        if (GroupService.CurrentGroup != null && _personId == null)
         {
             var personId = await ProtectedLocalStorage.GetAsync<int>(
-                "grouporder_person_" + GroupService.Group.Id
+                "grouporder_person_" + GroupService.CurrentGroup.Id
             );
             if (personId.Success)
             {
@@ -89,9 +89,9 @@ public partial class MyOrder
     {
         if (_personId == null)
             return 0;
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return 0;
-        if (GroupService.Group.PaymentType != PaymentType.Pay)
+        if (GroupService.CurrentGroup.PaymentType != PaymentType.Pay)
             return 0;
         Person? person = GroupService.GetPersonByID(_personId.Value);
         if (person == null)
@@ -104,7 +104,7 @@ public partial class MyOrder
 
     private void CreatePerson()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
             return;
         if (NewName == null)
             return;
@@ -113,7 +113,7 @@ public partial class MyOrder
 
         GroupService.ReloadRestriction.WaitOne();
 
-        Person person = new Person { Group = GroupService.Group, Name = NewName };
+        Person person = new Person { Group = GroupService.CurrentGroup, Name = NewName };
 
         GroupService.AddPerson(person);
         GroupService.Save();
@@ -122,7 +122,7 @@ public partial class MyOrder
 
         GroupService.ReloadRestriction.Release();
 
-        ProtectedLocalStorage.SetAsync("grouporder_person_" + GroupService.Group.Id, person.Id);
+        ProtectedLocalStorage.SetAsync("grouporder_person_" + GroupService.CurrentGroup.Id, person.Id);
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
@@ -137,7 +137,7 @@ public partial class MyOrder
             );
         }
 
-        if (GroupService.Group is null || GroupService.Group.PaymentType != PaymentType.NoPrices)
+        if (GroupService.CurrentGroup is null || GroupService.CurrentGroup.PaymentType != PaymentType.NoPrices)
         {
             if (OrderPrice == null | OrderPrice < 0)
             {
@@ -172,7 +172,7 @@ public partial class MyOrder
 
         Order newOrder = new() { Food = OrderFood! };
 
-        if (GroupService.Group!.PaymentType != PaymentType.NoPrices)
+        if (GroupService.CurrentGroup!.PaymentType != PaymentType.NoPrices)
         {
             newOrder.Price = (int)(OrderPrice! * 100);
         }
@@ -220,6 +220,6 @@ public partial class MyOrder
 
     private bool IsOrderingClosed()
     {
-        return DateTime.Now > GroupService.Group!.ClosingTime;
+        return DateTime.Now > GroupService.CurrentGroup!.ClosingTime;
     }
 }

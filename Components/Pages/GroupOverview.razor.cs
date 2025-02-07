@@ -38,7 +38,7 @@ public partial class GroupOverview
 
     private async void ChangeTitle(ChangeEventArgs x)
     {
-        if (x.Value is string && GroupService.Group != null)
+        if (x.Value is string && GroupService.CurrentGroup != null)
         {
             newTitle = (string)x.Value;
         }
@@ -53,9 +53,9 @@ public partial class GroupOverview
             return;
         }
 
-        if (GroupService.Group != null)
+        if (GroupService.CurrentGroup != null)
         {
-            GroupService.Group.GroupName = newTitle;
+            GroupService.CurrentGroup.GroupName = newTitle;
             await GroupService.Save();
             fail = false;
         }
@@ -65,7 +65,7 @@ public partial class GroupOverview
 
     private async void ChangeDescription(ChangeEventArgs x)
     {
-        if (x.Value is string && GroupService.Group != null)
+        if (x.Value is string && GroupService.CurrentGroup != null)
         {
             newDescription = (string)x.Value;
         }
@@ -80,9 +80,9 @@ public partial class GroupOverview
             return;
         }
 
-        if (GroupService.Group != null)
+        if (GroupService.CurrentGroup != null)
         {
-            GroupService.Group.Description = newDescription;
+            GroupService.CurrentGroup.Description = newDescription;
             await GroupService.Save();
             fail = false;
         }
@@ -92,7 +92,7 @@ public partial class GroupOverview
 
     private async void ChangeMenuURL(ChangeEventArgs x)
     {
-        if (x.Value is string && GroupService.Group != null)
+        if (x.Value is string && GroupService.CurrentGroup != null)
         {
             newMenuURL = (string)x.Value;
         }
@@ -107,9 +107,9 @@ public partial class GroupOverview
             return;
         }
 
-        if (GroupService.Group != null)
+        if (GroupService.CurrentGroup != null)
         {
-            GroupService.Group.MenuUrl = newMenuURL;
+            GroupService.CurrentGroup.MenuUrl = newMenuURL;
             await GroupService.Save();
             fail = false;
         }
@@ -119,7 +119,7 @@ public partial class GroupOverview
 
     private async void ChangeDeadline(ChangeEventArgs x)
     {
-        if (x.Value is String && GroupService.Group != null)
+        if (x.Value is String && GroupService.CurrentGroup != null)
         {
             newDeadline = DateTime.Parse((string)x.Value!);
         }
@@ -127,9 +127,9 @@ public partial class GroupOverview
 
     private async void SaveDeadline()
     {
-        if (GroupService.Group != null)
+        if (GroupService.CurrentGroup != null)
         {
-            GroupService.Group.ClosingTime = newDeadline;
+            GroupService.CurrentGroup.ClosingTime = newDeadline;
             await GroupService.Save();
         }
 
@@ -146,13 +146,13 @@ public partial class GroupOverview
 
     private void AddToOrder()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
         {
             fail = true;
             return;
         }
 
-        if (GroupService.Group!.PaymentType != PaymentType.NoPrices && OrderPrice is null or < 0)
+        if (GroupService.CurrentGroup!.PaymentType != PaymentType.NoPrices && OrderPrice is null or < 0)
         {
             fail = true;
             return;
@@ -174,9 +174,9 @@ public partial class GroupOverview
 
         if (OrderPersonId == null)
         {
-            if (GroupService.Group.Persons.Count > 0)
+            if (GroupService.CurrentGroup.Persons.Count > 0)
             {
-                order.Person = GroupService.Group.Persons.First();
+                order.Person = GroupService.CurrentGroup.Persons.First();
             }
             else
             {
@@ -186,7 +186,7 @@ public partial class GroupOverview
         }
         else
         {
-            order.Person = GroupService.Group.Persons.Single((person) => person.Id == OrderPersonId);
+            order.Person = GroupService.CurrentGroup.Persons.Single((person) => person.Id == OrderPersonId);
         }
 
         if (OrderPrice != null)

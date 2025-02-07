@@ -3,13 +3,13 @@
 
 <div class="card">
     <div class="card-header">
-        ℹ️ Group <i>@GroupService.Group.GroupName</i>
+        ℹ️ Group <i>@GroupService.CurrentGroup.GroupName</i>
     </div>
     <div class="card-body">
         @if (!GroupService.IsOrderingClosed())
         {
             <h5 class="card-title mb-2 text-body-secondary">
-                Ordering is closing at @GroupService.Group.ClosingTime!.Value
+                Ordering is closing at @GroupService.CurrentGroup.ClosingTime!.Value
             </h5>
         }
         else
@@ -19,11 +19,11 @@
             </h5>
         }
         <p class="card-text">
-            @GroupService.Group.Description
+            @GroupService.CurrentGroup.Description
         </p>
-        @if (GroupService.Group.MenuUrl != null)
+        @if (GroupService.CurrentGroup.MenuUrl != null)
         {
-            <a href="@GroupService.Group.MenuUrl" target="_blank" class="btn btn-secondary">
+            <a href="@GroupService.CurrentGroup.MenuUrl" target="_blank" class="btn btn-secondary">
                 🗺️ Visit Menu
             </a>
         }

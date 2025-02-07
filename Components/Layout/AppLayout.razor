@@ -19,11 +19,7 @@
     </div>
 </header>
 
-@if (GroupService.Loading)
-{
-    <p>Still loading, please wait...</p>
-}
-else if (GroupService.Group != null)
+@if (GroupService.CurrentGroup != null)
 {
     <main>
         <section class="py-5 container">

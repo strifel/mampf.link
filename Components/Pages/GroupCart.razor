@@ -11,11 +11,11 @@
 @inject IGroupService GroupService
 @inject IAdminService AdminService
 
-<PageTitle>Mampf.Link @GroupService.Group?.GroupName Cart-Helper</PageTitle>
+<PageTitle>Mampf.Link @GroupService.CurrentGroup?.GroupName Cart-Helper</PageTitle>
 
-@if (GroupService.Group != null && AdminService.IsAdmin())
+@if (GroupService.CurrentGroup != null && AdminService.IsAdmin())
 {
-    <h1>Left to add to Cart: @GroupService.Group?.GroupName</h1>
+    <h1>Left to add to Cart: @GroupService.CurrentGroup?.GroupName</h1>
 
 
     <table class="table">
@@ -24,7 +24,7 @@
             <th>
                 Food
             </th>
-            @if (GroupService.Group!.PaymentType != PaymentType.NoPrices)
+            @if (GroupService.CurrentGroup!.PaymentType != PaymentType.NoPrices)
             {
                 <th>
                     Price
@@ -36,7 +36,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (Order order in GroupService.Group!.Orders)
+        @foreach (Order order in GroupService.CurrentGroup!.Orders)
         {
             @if (order.AddedToCart == true)
             {
@@ -47,7 +47,7 @@
                 <td>
                     @order.Food
                 </td>
-                @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
+                @if (GroupService.CurrentGroup.PaymentType != PaymentType.NoPrices)
                 {
                     <td>
                         @order.GetPrice()€
@@ -66,7 +66,7 @@
     </table>
     <br>
     <br>
-    @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
+    @if (GroupService.CurrentGroup.PaymentType != PaymentType.NoPrices)
     {
         <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
             The total will be @Order.GetPrice(CalculateTotalSum())€.</p>

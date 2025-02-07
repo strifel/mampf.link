@@ -23,12 +23,12 @@ public partial class GroupFinanze
 
     private IEnumerable<Person> GetPersons()
     {
-        if (GroupService.Group == null)
+        if (GroupService.CurrentGroup == null)
         {
             return [];
         }
 
-        IEnumerable<Person> persons = GroupService.Group!.Persons;
+        IEnumerable<Person> persons = GroupService.CurrentGroup!.Persons;
         persons = persons
             .Where(p => p.Orders.Sum(x => x.Price) != 0 || p.Payments.Count != 0)
             .OrderBy(x => x.Name);

@@ -11,10 +11,7 @@ public interface IGroupService
     public Semaphore ReloadRestriction { get; }
 
     // Returns the group that is currently loaded
-    public Group? Group { get; }
-
-    // Returns if the group is currently loading
-    public bool Loading { get; }
+    public Group? CurrentGroup { get; }
 
     // Loads group by slug
     // Does not reload if the slug is the same

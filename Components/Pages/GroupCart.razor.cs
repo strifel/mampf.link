@@ -5,7 +5,8 @@ namespace GroupOrder.Components.Pages;
 
 public partial class GroupCart
 {
-    [Parameter] public string? GroupSlug { get; set; }
+    [Parameter]
+    public string? GroupSlug { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -20,20 +21,24 @@ public partial class GroupCart
 
     private int CalculateTotalSum()
     {
-        if (gs.Group == null) return 0;
+        if (gs.Group == null)
+            return 0;
         return gs.Group.Orders.Sum(o => o.Price) ?? 0;
     }
 
     private int CalculateAddedSum()
     {
-        if (gs.Group == null) return 0;
+        if (gs.Group == null)
+            return 0;
         return gs.Group.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
     }
 
     private async void SetAdded(Order order)
     {
-        if (gs.Group == null) return;
-        if (!adminService.IsAdmin()) return; // this theoretically should not happen
+        if (gs.Group == null)
+            return;
+        if (!adminService.IsAdmin())
+            return; // this theoretically should not happen
         gs.ReloadRestriction.WaitOne();
         order.AddedToCart = true;
         await gs.Save();
@@ -42,8 +47,10 @@ public partial class GroupCart
 
     private async void ResetCart()
     {
-        if (gs.Group == null) return;
-        if (!adminService.IsAdmin()) return; // this theoretically should not happen
+        if (gs.Group == null)
+            return;
+        if (!adminService.IsAdmin())
+            return; // this theoretically should not happen
         gs.ReloadRestriction.WaitOne();
         foreach (Order order in gs.Group.Orders)
         {

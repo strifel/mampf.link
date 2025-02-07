@@ -9,11 +9,15 @@ namespace GroupOrder.Components.Pages;
 
 public partial class VanityURL
 {
-    [SupplyParameterFromForm] public Data.Group? Model { get; set; }
-    [SupplyParameterFromForm] public String? VanityAdminCodeInput { get; set; }
+    [SupplyParameterFromForm]
+    public Data.Group? Model { get; set; }
+
+    [SupplyParameterFromForm]
+    public String? VanityAdminCodeInput { get; set; }
     private ValidationMessageStore? _messageStore;
 
-    [Parameter] public string? VanitySlug { get; set; }
+    [Parameter]
+    public string? VanitySlug { get; set; }
 
     private GroupContext? _context;
     private EditContext? _editContext;
@@ -31,7 +35,7 @@ public partial class VanityURL
         Model ??= new()
         {
             ClosingTime = DateTime.Now + TimeSpan.FromMinutes(30),
-            EditingRule = EditingRule.NeverAllow
+            EditingRule = EditingRule.NeverAllow,
         };
 
         _editContext = new(Model);
@@ -54,10 +58,9 @@ public partial class VanityURL
             _context = DbFactory.CreateDbContext();
         }
 
-        Vanity = await _context.VanityUrls
-            .Include(v => v.History)
-            .SingleOrDefaultAsync(
-                c => c.Slug == VanitySlug);
+        Vanity = await _context
+            .VanityUrls.Include(v => v.History)
+            .SingleOrDefaultAsync(c => c.Slug == VanitySlug);
 
         if (Vanity is null)
         {
@@ -67,8 +70,8 @@ public partial class VanityURL
         {
             if (Model is { GroupName: null })
             {
-                Model.GroupName = Vanity.VanityName + " " + DateTime.Now.Day + "." +
-                                  DateTime.Now.Month;
+                Model.GroupName =
+                    Vanity.VanityName + " " + DateTime.Now.Day + "." + DateTime.Now.Month;
             }
         }
 
@@ -77,8 +80,10 @@ public partial class VanityURL
 
     private void Submit()
     {
-        if (Vanity == null) return;
-        if (_context == null) return;
+        if (Vanity == null)
+            return;
+        if (_context == null)
+            return;
 
         // Remove old Vanity
 
@@ -97,16 +102,19 @@ public partial class VanityURL
         _context.SaveChanges();
 
         NavigationManager.NavigateTo(
-            $"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}");
+            $"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}"
+        );
     }
 
-    private void HandleValidationRequested(object? sender,
-        ValidationRequestedEventArgs args)
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
         _messageStore?.Clear();
 
-        if (Model!.GroupName == null || Model!.GroupName!.Length == 0 ||
-            Model!.GroupName!.Length > 100)
+        if (
+            Model!.GroupName == null
+            || Model!.GroupName!.Length == 0
+            || Model!.GroupName!.Length > 100
+        )
         {
             _messageStore?.Add(() => Model!, "You must enter a Name between 1 and 100 chars.");
         }
@@ -116,15 +124,22 @@ public partial class VanityURL
             _messageStore?.Add(() => Model!, "Description should be maximum 500 characters");
         }
 
-        if (Model!.PaypalUsername != null && (Model!.PaypalUsername!.Length > 20 ||
-                                              !new Regex("^[a-zA-Z0-9]+$").IsMatch(
-                                                  Model!.PaypalUsername!)))
+        if (
+            Model!.PaypalUsername != null
+            && (
+                Model!.PaypalUsername!.Length > 20
+                || !new Regex("^[a-zA-Z0-9]+$").IsMatch(Model!.PaypalUsername!)
+            )
+        )
         {
             _messageStore?.Add(() => Model!, "Please enter a valid paypal username");
         }
 
-        if (VanityAdminCodeInput == null || Vanity == null ||
-            !VanityAdminCodeInput.Equals(Vanity!.AdminCode))
+        if (
+            VanityAdminCodeInput == null
+            || Vanity == null
+            || !VanityAdminCodeInput.Equals(Vanity!.AdminCode)
+        )
         {
             _messageStore?.Add(() => Model!, "Please enter the correct Vanity-URL password");
         }
@@ -139,14 +154,18 @@ public partial class VanityURL
             _messageStore?.Add(() => Model!, "Please enter no or a valid url.");
         }
 
-        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndDeadline &&
-            Model!.PaymentType == PaymentType.Pay)
+        if (
+            Model!.EditingRule == EditingRule.AllowBeforeCartAndDeadline
+            && Model!.PaymentType == PaymentType.Pay
+        )
         {
             _messageStore?.Add(() => Model!, "Please select a valid Editing Rule.");
         }
 
-        if (Model!.EditingRule == EditingRule.AllowBeforeCartAndPaymentAndDeadline &&
-            Model!.PaymentType != PaymentType.Pay)
+        if (
+            Model!.EditingRule == EditingRule.AllowBeforeCartAndPaymentAndDeadline
+            && Model!.PaymentType != PaymentType.Pay
+        )
         {
             _messageStore?.Add(() => Model!, "Please select a valid Editing Rule.");
         }

@@ -14,9 +14,7 @@ public class GroupContext : DbContext
 
     public GroupContext()
     {
-        Directory.CreateDirectory(
-            Path.Join(Directory.GetCurrentDirectory(), "var/")
-        );
+        Directory.CreateDirectory(Path.Join(Directory.GetCurrentDirectory(), "var/"));
         DbPath = Path.Join(Directory.GetCurrentDirectory(), "var/groups.db");
     }
 

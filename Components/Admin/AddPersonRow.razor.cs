@@ -7,21 +7,21 @@ public partial class AddPersonRow
 {
     private String? PersonName { get; set; }
 
-    [Parameter] public EventCallback OnAdded { get; set; }
+    [Parameter]
+    public EventCallback OnAdded { get; set; }
 
     private async void AddPerson()
     {
-        if (gs.Group == null) return;
-        if (PersonName == null) return;
-        if (PersonName.Length is > 100 or 0) return;
+        if (gs.Group == null)
+            return;
+        if (PersonName == null)
+            return;
+        if (PersonName.Length is > 100 or 0)
+            return;
 
         gs.ReloadRestriction.WaitOne();
 
-        Person person = new Person
-        {
-            Group = gs.Group,
-            Name = PersonName
-        };
+        Person person = new Person { Group = gs.Group, Name = PersonName };
 
         gs.AddPerson(person);
         await gs.Save();

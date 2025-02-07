@@ -152,7 +152,10 @@ public partial class GroupOverview
             return;
         }
 
-        if (GroupService.CurrentGroup!.PaymentType != PaymentType.NoPrices && OrderPrice is null or < 0)
+        if (
+            GroupService.CurrentGroup!.PaymentType != PaymentType.NoPrices
+            && OrderPrice is null or < 0
+        )
         {
             fail = true;
             return;
@@ -186,7 +189,9 @@ public partial class GroupOverview
         }
         else
         {
-            order.Person = GroupService.CurrentGroup.Persons.Single((person) => person.Id == OrderPersonId);
+            order.Person = GroupService.CurrentGroup.Persons.Single(
+                (person) => person.Id == OrderPersonId
+            );
         }
 
         if (OrderPrice != null)

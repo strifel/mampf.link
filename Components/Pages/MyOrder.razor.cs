@@ -7,23 +7,23 @@ namespace GroupOrder.Components.Pages;
 public partial class MyOrder
 {
     private int? _personId;
-    private String? NewName { get; set; }
-    private String? OrderFood { get; set; }
-    private Decimal? OrderPrice { get; set; }
-    private EditContext? editContext;
-    private ValidationMessageStore? messageStore;
-    private bool showAllOrders = false;
-    private bool NoPerson { get; set; } = false;
-    private PaymentMethod? SelectedPaymentMethod;
+    private string? NewName { get; set; }
+    private string? OrderFood { get; set; }
+    private decimal? OrderPrice { get; set; }
+    private EditContext? _editContext;
+    private ValidationMessageStore? _messageStore;
+    private bool _showAllOrders;
+    private bool NoPerson { get; set; }
+    private PaymentMethod? _selectedPaymentMethod;
 
     [Parameter]
     public string? GroupSlug { get; set; }
 
     protected override void OnInitialized()
     {
-        editContext = new(this);
-        editContext.OnValidationRequested += HandleValidationRequested;
-        messageStore = new(editContext);
+        _editContext = new(this);
+        _editContext.OnValidationRequested += HandleValidationRequested;
+        _messageStore = new(_editContext);
         GroupService.OnGroupReload += GroupServiceOnGroupReload;
         base.OnInitialized();
     }
@@ -61,7 +61,7 @@ public partial class MyOrder
     {
         if (_personId == null)
             return;
-        if (SelectedPaymentMethod == null)
+        if (_selectedPaymentMethod == null)
             return;
         int paid = GetPriceToPay();
         GroupService.ReloadRestriction.WaitOne();
@@ -76,13 +76,13 @@ public partial class MyOrder
         payment.Amount = paid;
         payment.Person = person;
         payment.PaymentConfirmed = false;
-        payment.PaymentMethod = SelectedPaymentMethod ?? PaymentMethod.Other;
+        payment.PaymentMethod = _selectedPaymentMethod ?? PaymentMethod.Other;
 
         GroupService.AddPayment(payment, person);
 
         await GroupService.Save();
         GroupService.ReloadRestriction.Release();
-        SelectedPaymentMethod = null;
+        _selectedPaymentMethod = null;
     }
 
     private int GetPriceToPay()
@@ -127,12 +127,12 @@ public partial class MyOrder
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
-        messageStore?.Clear();
+        _messageStore?.Clear();
 
         if (string.IsNullOrEmpty(OrderFood) || OrderFood.Length > 100)
         {
-            messageStore?.Add(
-                () => editContext!,
+            _messageStore?.Add(
+                () => _editContext!,
                 "You must enter a Food Choice between 1 and 100 chars."
             );
         }
@@ -141,20 +141,20 @@ public partial class MyOrder
         {
             if (OrderPrice == null | OrderPrice < 0)
             {
-                messageStore?.Add(() => editContext!, "Price must be greater than 0.");
+                _messageStore?.Add(() => _editContext!, "Price must be greater than 0.");
             }
 
             if (OrderPrice is > 2000)
             {
                 // We produce an overflow if its bigger than 21474836€
                 // We also produce overflows if the sum of the total order is bigger than 21474836€
-                messageStore?.Add(() => editContext!, "Price must be smaller or equal to 2000€.");
+                _messageStore?.Add(() => _editContext!, "Price must be smaller or equal to 2000€.");
             }
         }
 
         if (IsOrderingClosed())
         {
-            messageStore?.Add(() => editContext!, "The ordering period has already closed.");
+            _messageStore?.Add(() => _editContext!, "The ordering period has already closed.");
         }
     }
 
@@ -202,17 +202,17 @@ public partial class MyOrder
     {
         OrderPrice = null;
         OrderFood = null;
-        editContext!.OnValidationRequested -= HandleValidationRequested;
-        editContext = new(this);
-        editContext.OnValidationRequested += HandleValidationRequested;
-        messageStore = new(editContext);
+        _editContext!.OnValidationRequested -= HandleValidationRequested;
+        _editContext = new(this);
+        _editContext.OnValidationRequested += HandleValidationRequested;
+        _messageStore = new(_editContext);
     }
 
     public void Dispose()
     {
-        if (editContext is not null)
+        if (_editContext is not null)
         {
-            editContext.OnValidationRequested -= HandleValidationRequested;
+            _editContext.OnValidationRequested -= HandleValidationRequested;
         }
 
         GroupService.OnGroupReload -= GroupServiceOnGroupReload;

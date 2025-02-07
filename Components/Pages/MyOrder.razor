@@ -40,7 +40,7 @@
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                @if (showAllOrders)
+                @if (_showAllOrders)
                 {
                     <h2>All orders:</h2>
                 }
@@ -48,12 +48,12 @@
                 {
                     <h2>Your order:</h2>
                 }
-                <EditForm EditContext="editContext" OnValidSubmit="AddToOrder"
+                <EditForm EditContext="_editContext" OnValidSubmit="AddToOrder"
                           FormName="order-form">
                     <table class="table">
                         <thead>
                         <tr>
-                            @if (showAllOrders)
+                            @if (_showAllOrders)
                             {
                                 <th>
                                     Person
@@ -72,7 +72,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @if (!showAllOrders)
+                        @if (!_showAllOrders)
                         {
                             @foreach (Order order in GroupService.GetPersonByID(_personId.Value)!.Orders)
                             {
@@ -121,7 +121,7 @@
                         @if (!IsOrderingClosed())
                         {
                             <tr>
-                                @if (showAllOrders)
+                                @if (_showAllOrders)
                                 {
                                     <td>
                                         @GroupService.GetPersonByID(_personId.Value)?.Name
@@ -146,9 +146,9 @@
                         }
                         </tbody>
                     </table>
-                    <ValidationMessage For="() => editContext!"/>
+                    <ValidationMessage For="() => _editContext!"/>
                 </EditForm>
-                <InputCheckbox @bind-Value="showAllOrders" id="showAllOrders"/>
+                <InputCheckbox @bind-Value="_showAllOrders" id="showAllOrders"/>
                 <label style="padding-left: 5px" for="showAllOrders">Show orders of other
                     people</label>
             </div>
@@ -174,14 +174,14 @@
                     <br/>
                     <br/>
                     <p>Afterwards: mark as paid with
-                        <InputSelect @bind-Value="SelectedPaymentMethod">
+                        <InputSelect @bind-Value="_selectedPaymentMethod">
                             <option value="@PaymentMethod.Other" hidden>Select here</option>
                             <option value="@PaymentMethod.Paypal">Paypal</option>
                             <option value="@PaymentMethod.WireTransfer">wire transfer</option>
                             <option value="@PaymentMethod.Cash">cash</option>
                             <option value="@PaymentMethod.Other">other</option>
                         </InputSelect>
-                        @if (SelectedPaymentMethod != null)
+                        @if (_selectedPaymentMethod != null)
                         {
                             <button style="margin-left: 5px" class="btn btn-secondary"
                                     @onclick="Paid">save

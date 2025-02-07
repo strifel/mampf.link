@@ -15,15 +15,14 @@ namespace GroupOrder.Migrations
                 table: "Groups",
                 type: "TEXT",
                 maxLength: 100,
-                nullable: true);
+                nullable: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "MenuURL",
-                table: "Groups");
+            migrationBuilder.DropColumn(name: "MenuURL", table: "Groups");
         }
     }
 }

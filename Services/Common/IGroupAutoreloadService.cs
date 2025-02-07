@@ -2,12 +2,13 @@ namespace GroupOrder.Services.Common;
 
 using Data;
 
-public interface IGroupAutoreloadService {
-
+public interface IGroupAutoreloadService
+{
     public GroupEventHandlerHolder getHandlerForGroup(Group group);
 }
 
-public class GroupEventHandlerHolder {
+public class GroupEventHandlerHolder
+{
     public event EventHandler OnGroupUpdated;
 
     public void Call()

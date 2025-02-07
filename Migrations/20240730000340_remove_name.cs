@@ -10,9 +10,7 @@ namespace GroupOrder.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Name",
-                table: "Orders");
+            migrationBuilder.DropColumn(name: "Name", table: "Orders");
         }
 
         /// <inheritdoc />
@@ -24,7 +22,8 @@ namespace GroupOrder.Migrations
                 type: "TEXT",
                 maxLength: 100,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
         }
     }
 }

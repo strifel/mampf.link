@@ -18,10 +18,10 @@
 <div class="row">
     @if (GroupService.CurrentGroup != null)
     {
-        @if (_personId != null)
+        @if (GroupService.CurrentPerson != null)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <h1>Hi @GroupService.GetPersonByID(_personId.Value)?.Name</h1>
+                <h1>Hi @GroupService.CurrentPerson?.Name</h1>
                 <h2>Welcome to @GroupService.CurrentGroup.GroupName</h2>
                 <p>@GroupService.CurrentGroup.Description</p>
                 @if (GroupService.CurrentGroup.MenuUrl != null)
@@ -74,7 +74,7 @@
                         <tbody>
                         @if (!_showAllOrders)
                         {
-                            @foreach (Order order in GroupService.GetPersonByID(_personId.Value)!.Orders)
+                            @foreach (Order order in GroupService.CurrentPerson!.Orders)
                             {
                                 <tr>
                                     <td>
@@ -110,7 +110,7 @@
                                         </td>
                                     }
                                     <td>
-                                        @if (order.Person == GroupService.GetPersonByID(_personId.Value))
+                                        @if (order.Person == GroupService.CurrentPerson)
                                         {
                                             <DeleteOrder Order="@order"/>
                                         }
@@ -124,7 +124,7 @@
                                 @if (_showAllOrders)
                                 {
                                     <td>
-                                        @GroupService.GetPersonByID(_personId.Value)?.Name
+                                        @GroupService.CurrentPerson?.Name
                                     </td>
                                 }
                                 <td>
@@ -205,7 +205,7 @@
             </div>
         }
 
-        @if (_personId == null && NoPerson)
+        @if (GroupService.CurrentPerson == null)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <h1>You are new to the group!</h1>

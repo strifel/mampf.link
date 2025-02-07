@@ -6,14 +6,13 @@ namespace GroupOrder.Components.Pages;
 
 public partial class MyOrder
 {
-    private int? _personId;
     private string? NewName { get; set; }
     private string? OrderFood { get; set; }
     private decimal? OrderPrice { get; set; }
     private EditContext? _editContext;
     private ValidationMessageStore? _messageStore;
     private bool _showAllOrders;
-    private bool NoPerson { get; set; }
+
     private PaymentMethod? _selectedPaymentMethod;
 
     [Parameter]
@@ -37,18 +36,14 @@ public partial class MyOrder
     {
         // find local person
         // this needs to be done here because it uses javascript interop
-        if (GroupService.CurrentGroup != null && _personId == null)
+        if (GroupService.CurrentGroup != null && GroupService.CurrentPerson == null)
         {
             var personId = await ProtectedLocalStorage.GetAsync<int>(
                 "grouporder_person_" + GroupService.CurrentGroup.Id
             );
             if (personId.Success)
             {
-                _personId = personId.Value;
-            }
-            else
-            {
-                NoPerson = true;
+                GroupService.SetCurrentPersonId(personId.Value);
             }
 
             StateHasChanged();
@@ -59,13 +54,12 @@ public partial class MyOrder
 
     private async void Paid()
     {
-        if (_personId == null)
-            return;
         if (_selectedPaymentMethod == null)
             return;
         int paid = GetPriceToPay();
+
         GroupService.ReloadRestriction.WaitOne();
-        Person? person = GroupService.GetPersonByID(_personId.Value);
+        Person? person = GroupService.CurrentPerson;
         if (person == null)
         {
             GroupService.ReloadRestriction.Release();
@@ -87,13 +81,11 @@ public partial class MyOrder
 
     private int GetPriceToPay()
     {
-        if (_personId == null)
-            return 0;
         if (GroupService.CurrentGroup == null)
             return 0;
         if (GroupService.CurrentGroup.PaymentType != PaymentType.Pay)
             return 0;
-        Person? person = GroupService.GetPersonByID(_personId.Value);
+        Person? person = GroupService.CurrentPerson;
         if (person == null)
         {
             return 0;
@@ -118,7 +110,7 @@ public partial class MyOrder
         GroupService.AddPerson(person);
         GroupService.Save();
 
-        _personId = person.Id;
+        GroupService.SetCurrentPersonId(person.Id);
 
         GroupService.ReloadRestriction.Release();
 
@@ -160,10 +152,8 @@ public partial class MyOrder
 
     private async void AddToOrder()
     {
-        if (_personId == null)
-            return;
         GroupService.ReloadRestriction.WaitOne();
-        Person? person = GroupService.GetPersonByID(_personId.Value);
+        Person? person = GroupService.CurrentPerson;
         if (person == null)
         {
             GroupService.ReloadRestriction.Release();

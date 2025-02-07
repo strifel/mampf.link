@@ -14,6 +14,8 @@ public class GroupService(
     public Group? CurrentGroup { get; private set; }
     private GroupContext? _context;
 
+    public Person? CurrentPerson { get; private set; }
+
     // Loads group from database
     // Does not reload if the slug is the same
     public async Task LoadGroup(string slug)
@@ -34,6 +36,8 @@ public class GroupService(
         if (_context != null)
             await _context.DisposeAsync();
 
+        CurrentPerson = null;
+
         // Create a new Context to not have issues with other groups
         // still loaded
         _context = await dbFactory.CreateDbContextAsync();
@@ -46,7 +50,10 @@ public class GroupService(
         if (CurrentGroup != null)
         {
             autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated += OnGroupUpdated;
-            Task.Run(() => { OnGroupReload?.Invoke(this, EventArgs.Empty); });
+            Task.Run(() =>
+            {
+                OnGroupReload?.Invoke(this, EventArgs.Empty);
+            });
         }
     }
 
@@ -93,9 +100,10 @@ public class GroupService(
         _context?.Add(person);
     }
 
-    public Person? GetPersonByID(int id)
+    public Person? SetCurrentPersonId(int id)
     {
-        return CurrentGroup?.Persons.FirstOrDefault(p => p.Id == id);
+        CurrentPerson = CurrentGroup?.Persons.SingleOrDefault(p => p.Id == id);
+        return CurrentPerson;
     }
 
     public void AddOrder(Order order, Person person)
@@ -135,7 +143,10 @@ public class GroupService(
 
         await _context.SaveChangesAsync();
 
-        Task.Run(() => { autoreloadService.GetHandlerForGroup(CurrentGroup!).Call(); });
+        Task.Run(() =>
+        {
+            autoreloadService.GetHandlerForGroup(CurrentGroup!).Call();
+        });
     }
 
     public bool IsOrderingClosed()

@@ -152,6 +152,11 @@ public class GroupService(
         });
     }
 
+    public bool IsOrderingClosed()
+    {
+        return DateTime.Now > Group!.ClosingTime;
+    }
+
     public void Dispose()
     {
         _context?.Dispose();

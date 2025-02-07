@@ -24,11 +24,11 @@ public partial class MyOrder
         editContext = new(this);
         editContext.OnValidationRequested += HandleValidationRequested;
         messageStore = new(editContext);
-        gs.OnGroupReload += GsOnOnGroupReload;
+        GroupService.OnGroupReload += GroupServiceOnGroupReload;
         base.OnInitialized();
     }
 
-    private void GsOnOnGroupReload(object? sender, EventArgs e)
+    private void GroupServiceOnGroupReload(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
     }
@@ -37,10 +37,10 @@ public partial class MyOrder
     {
         // find local person
         // this needs to be done here because it uses javascript interop
-        if (gs.Group != null && _personId == null)
+        if (GroupService.Group != null && _personId == null)
         {
             var personId = await ProtectedLocalStorage.GetAsync<int>(
-                "grouporder_person_" + gs.Group.Id
+                "grouporder_person_" + GroupService.Group.Id
             );
             if (personId.Success)
             {
@@ -64,11 +64,11 @@ public partial class MyOrder
         if (SelectedPaymentMethod == null)
             return;
         int paid = GetPriceToPay();
-        gs.ReloadRestriction.WaitOne();
-        Person? person = gs.GetPersonByID(_personId.Value);
+        GroupService.ReloadRestriction.WaitOne();
+        Person? person = GroupService.GetPersonByID(_personId.Value);
         if (person == null)
         {
-            gs.ReloadRestriction.Release();
+            GroupService.ReloadRestriction.Release();
             return;
         }
 
@@ -78,10 +78,10 @@ public partial class MyOrder
         payment.PaymentConfirmed = false;
         payment.PaymentMethod = SelectedPaymentMethod ?? PaymentMethod.Other;
 
-        gs.AddPayment(payment, person);
+        GroupService.AddPayment(payment, person);
 
-        await gs.Save();
-        gs.ReloadRestriction.Release();
+        await GroupService.Save();
+        GroupService.ReloadRestriction.Release();
         SelectedPaymentMethod = null;
     }
 
@@ -89,11 +89,11 @@ public partial class MyOrder
     {
         if (_personId == null)
             return 0;
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return 0;
-        if (gs.Group.PaymentType != PaymentType.Pay)
+        if (GroupService.Group.PaymentType != PaymentType.Pay)
             return 0;
-        Person? person = gs.GetPersonByID(_personId.Value);
+        Person? person = GroupService.GetPersonByID(_personId.Value);
         if (person == null)
         {
             return 0;
@@ -104,25 +104,25 @@ public partial class MyOrder
 
     private void CreatePerson()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return;
         if (NewName == null)
             return;
         if (NewName.Length is > 100 or 0)
             return;
 
-        gs.ReloadRestriction.WaitOne();
+        GroupService.ReloadRestriction.WaitOne();
 
-        Person person = new Person { Group = gs.Group, Name = NewName };
+        Person person = new Person { Group = GroupService.Group, Name = NewName };
 
-        gs.AddPerson(person);
-        gs.Save();
+        GroupService.AddPerson(person);
+        GroupService.Save();
 
         _personId = person.Id;
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
 
-        ProtectedLocalStorage.SetAsync("grouporder_person_" + gs.Group.Id, person.Id);
+        ProtectedLocalStorage.SetAsync("grouporder_person_" + GroupService.Group.Id, person.Id);
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
@@ -137,7 +137,7 @@ public partial class MyOrder
             );
         }
 
-        if (gs.Group is null || gs.Group.PaymentType != PaymentType.NoPrices)
+        if (GroupService.Group is null || GroupService.Group.PaymentType != PaymentType.NoPrices)
         {
             if (OrderPrice == null | OrderPrice < 0)
             {
@@ -162,22 +162,22 @@ public partial class MyOrder
     {
         if (_personId == null)
             return;
-        gs.ReloadRestriction.WaitOne();
-        Person? person = gs.GetPersonByID(_personId.Value);
+        GroupService.ReloadRestriction.WaitOne();
+        Person? person = GroupService.GetPersonByID(_personId.Value);
         if (person == null)
         {
-            gs.ReloadRestriction.Release();
+            GroupService.ReloadRestriction.Release();
             return;
         }
 
         Order newOrder = new() { Food = OrderFood! };
 
-        if (gs.Group!.PaymentType != PaymentType.NoPrices)
+        if (GroupService.Group!.PaymentType != PaymentType.NoPrices)
         {
             newOrder.Price = (int)(OrderPrice! * 100);
         }
 
-        if (adminService.IsAdmin())
+        if (AdminService.IsAdmin())
         {
             Payment payment = new Payment();
             payment.PaymentMethod = PaymentMethod.NoPayment;
@@ -185,14 +185,14 @@ public partial class MyOrder
             payment.Person = person;
             payment.PaymentNote = "Auto added due to group leader order";
             payment.PaymentConfirmed = false;
-            gs.AddPayment(payment, person);
+            GroupService.AddPayment(payment, person);
         }
 
-        gs.AddOrder(newOrder, person);
-        await gs.Save();
-        await gs.ReloadGroup();
+        GroupService.AddOrder(newOrder, person);
+        await GroupService.Save();
+        await GroupService.ReloadGroup();
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
 
         ResetPendingOrder();
         StateHasChanged();
@@ -215,11 +215,11 @@ public partial class MyOrder
             editContext.OnValidationRequested -= HandleValidationRequested;
         }
 
-        gs.OnGroupReload -= GsOnOnGroupReload;
+        GroupService.OnGroupReload -= GroupServiceOnGroupReload;
     }
 
     private bool IsOrderingClosed()
     {
-        return DateTime.Now > gs.Group!.ClosingTime;
+        return DateTime.Now > GroupService.Group!.ClosingTime;
     }
 }

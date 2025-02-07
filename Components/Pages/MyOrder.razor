@@ -1,7 +1,5 @@
 ﻿@page "/group/{GroupSlug}"
 @implements IDisposable
-
-@using System.Diagnostics
 @using GroupOrder.Components.Layout
 @using GroupOrder.Data
 @using GroupOrder.Services.Common
@@ -12,27 +10,28 @@
 @layout AppLayout
 
 @inject ProtectedLocalStorage ProtectedLocalStorage
-@inject IGroupService gs
-@inject IAdminService adminService
+@inject IGroupService GroupService
+@inject IAdminService AdminService
 
-<PageTitle>Mampf.Link @gs.Group?.GroupName</PageTitle>
+<PageTitle>Mampf.Link @GroupService.Group?.GroupName</PageTitle>
 
 <div class="row">
-    @if (gs.Group != null)
+    @if (GroupService.Group != null)
     {
         @if (_personId != null)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <h1>Hi @gs.GetPersonByID(_personId.Value)?.Name</h1>
-                <h2>Welcome to @gs.Group.GroupName</h2>
-                <p>@gs.Group.Description</p>
-                @if (gs.Group.MenuUrl != null)
+                <h1>Hi @GroupService.GetPersonByID(_personId.Value)?.Name</h1>
+                <h2>Welcome to @GroupService.Group.GroupName</h2>
+                <p>@GroupService.Group.Description</p>
+                @if (GroupService.Group.MenuUrl != null)
                 {
-                    <p>Menu is located at <a href="@gs.Group.MenuUrl" target="_blank">@gs.Group.MenuUrl</a></p>
+                    <p>Menu is located at <a href="@GroupService.Group.MenuUrl"
+                                             target="_blank">@GroupService.Group.MenuUrl</a></p>
                 }
                 @if (!IsOrderingClosed())
                 {
-                    <p>Ordering is closing at @gs.Group.ClosingTime!.Value.</p>
+                    <p>Ordering is closing at @GroupService.Group.ClosingTime!.Value.</p>
                 }
                 else
                 {
@@ -49,7 +48,8 @@
                 {
                     <h2>Your order:</h2>
                 }
-                <EditForm EditContext="editContext" OnValidSubmit="AddToOrder" FormName="order-form">
+                <EditForm EditContext="editContext" OnValidSubmit="AddToOrder"
+                          FormName="order-form">
                     <table class="table">
                         <thead>
                         <tr>
@@ -62,7 +62,7 @@
                             <th>
                                 Food
                             </th>
-                            @if (gs.Group.PaymentType != PaymentType.NoPrices)
+                            @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
                             {
                                 <th>
                                     Price
@@ -74,13 +74,13 @@
                         <tbody>
                         @if (!showAllOrders)
                         {
-                            @foreach (Order order in gs.GetPersonByID(_personId.Value)!.Orders)
+                            @foreach (Order order in GroupService.GetPersonByID(_personId.Value)!.Orders)
                             {
                                 <tr>
                                     <td>
                                         @order.Food
                                     </td>
-                                    @if (gs.Group.PaymentType != PaymentType.NoPrices)
+                                    @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
                                     {
                                         <td>
                                             @order.GetPrice()€
@@ -94,7 +94,7 @@
                         }
                         else
                         {
-                            @foreach (Order order in gs.Group.Orders)
+                            @foreach (Order order in GroupService.Group.Orders)
                             {
                                 <tr>
                                     <td>
@@ -103,14 +103,14 @@
                                     <td>
                                         @order.Food
                                     </td>
-                                    @if (gs.Group.PaymentType != PaymentType.NoPrices)
+                                    @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
                                     {
                                         <td>
                                             @order.GetPrice()€
                                         </td>
                                     }
                                     <td>
-                                        @if (order.Person == gs.GetPersonByID(_personId.Value))
+                                        @if (order.Person == GroupService.GetPersonByID(_personId.Value))
                                         {
                                             <DeleteOrder Order="@order"/>
                                         }
@@ -124,16 +124,19 @@
                                 @if (showAllOrders)
                                 {
                                     <td>
-                                        @gs.GetPersonByID(_personId.Value)?.Name
+                                        @GroupService.GetPersonByID(_personId.Value)?.Name
                                     </td>
                                 }
                                 <td>
-                                    <InputText min-length="1" max-length="100" placeholder="Pizza Margherita" class="form-control" @bind-Value="OrderFood"/>
+                                    <InputText min-length="1" max-length="100"
+                                               placeholder="Pizza Margherita" class="form-control"
+                                               @bind-Value="OrderFood"/>
                                 </td>
-                                @if (gs.Group.PaymentType != PaymentType.NoPrices)
+                                @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
                                 {
                                     <td>
-                                        <InputNumber min="0" step="0.01" placeholder="10.00" class="form-control" @bind-Value="OrderPrice"/>
+                                        <InputNumber min="0" step="0.01" placeholder="10.00"
+                                                     class="form-control" @bind-Value="OrderPrice"/>
                                     </td>
                                 }
                                 <td>
@@ -145,7 +148,9 @@
                     </table>
                     <ValidationMessage For="() => editContext!"/>
                 </EditForm>
-                <InputCheckbox @bind-Value="showAllOrders" id="showAllOrders" /><label style="padding-left: 5px" for="showAllOrders">Show orders of other people</label>
+                <InputCheckbox @bind-Value="showAllOrders" id="showAllOrders"/>
+                <label style="padding-left: 5px" for="showAllOrders">Show orders of other
+                    people</label>
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
@@ -153,16 +158,23 @@
                 {
                     <h2>Pay here!</h2>
                     <p>
-                        You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader. <br/>
+                        You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader.
+                        <br/>
                         Please mark your Payment as Paid after you have paid the group leader.
                     </p>
-                    @if (gs.Group.PaypalUsername != null)
+                    @if (GroupService.Group.PaypalUsername != null)
                     {
-                        <p>You can use the Paypal Button to generate a paypal.me link for the correct amount to pay back the group leader.</p>
-                        <a class="btn btn-primary" style="margin-right: 2px" target="_blank" href="https://www.paypal.com/paypalme/@gs.Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send money via Paypal</a>
+                        <p>You can use the Paypal Button to generate a paypal.me link for the
+                            correct amount to pay back the group leader.</p>
+                        <a class="btn btn-primary" style="margin-right: 2px" target="_blank"
+                           href="https://www.paypal.com/paypalme/@GroupService.Group.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send
+                            money via Paypal</a>
                     }
-                    <br/><br/>
-                    <p>Afterwards: mark as paid with <InputSelect @bind-Value="SelectedPaymentMethod">
+
+                    <br/>
+                    <br/>
+                    <p>Afterwards: mark as paid with
+                        <InputSelect @bind-Value="SelectedPaymentMethod">
                             <option value="@PaymentMethod.Other" hidden>Select here</option>
                             <option value="@PaymentMethod.Paypal">Paypal</option>
                             <option value="@PaymentMethod.WireTransfer">wire transfer</option>
@@ -171,39 +183,42 @@
                         </InputSelect>
                         @if (SelectedPaymentMethod != null)
                         {
-                            <button style="margin-left: 5px" class="btn btn-secondary" @onclick="Paid">save</button>
+                            <button style="margin-left: 5px" class="btn btn-secondary"
+                                    @onclick="Paid">save
+                            </button>
                         }
-                    </p> 
-                    
+                    </p>
                 }
                 else if (GetPriceToPay() < 0)
                 {
                     <h2>Payments</h2>
                     <p>
-                        You seem to have overpaid @Order.GetPrice(GetPriceToPay()*-1)€.
+                        You seem to have overpaid @Order.GetPrice(GetPriceToPay() * -1)€.
                         Please contact the group leader.
                     </p>
                 }
-                else if (gs.Group.PaymentType == PaymentType.NoNeedToPay)
+                else if (GroupService.Group.PaymentType == PaymentType.NoNeedToPay)
                 {
                     <h2>Group leader pays!</h2>
                     <p>You are good to go!</p>
                 }
             </div>
         }
+
         @if (_personId == null && NoPerson)
         {
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <h1>You are new to the group!</h1>
-                <h2>Enter your name to join @gs.Group.GroupName</h2>
-                <p>@gs.Group.Description</p>
-                @if (gs.Group.MenuUrl != null)
+                <h2>Enter your name to join @GroupService.Group.GroupName</h2>
+                <p>@GroupService.Group.Description</p>
+                @if (GroupService.Group.MenuUrl != null)
                 {
-                    <p>Menu is located at <a href="@gs.Group.MenuUrl" target="_blank">@gs.Group.MenuUrl</a></p>
+                    <p>Menu is located at <a href="@GroupService.Group.MenuUrl"
+                                             target="_blank">@GroupService.Group.MenuUrl</a></p>
                 }
                 @if (!IsOrderingClosed())
                 {
-                    <p>Ordering is closing at @gs.Group.ClosingTime!.Value.</p>
+                    <p>Ordering is closing at @GroupService.Group.ClosingTime!.Value.</p>
                 }
                 else
                 {
@@ -218,7 +233,9 @@
                         @bind-Value="NewName"/>
                     <label for="group_name">Your name:</label>
                 </div>
-                <button class="btn btn-primary" @onclick="CreatePerson" style="height: 58px">Join Group!</button>
+                <button class="btn btn-primary" @onclick="CreatePerson" style="height: 58px">Join
+                    Group!
+                </button>
             </div>
         }
     }

@@ -8,14 +8,14 @@
 
 @layout AppLayout
 
-@inject IGroupService gs
-@inject IAdminService adminService
+@inject IGroupService GroupService
+@inject IAdminService AdminService
 
-<PageTitle>Mampf.Link @gs.Group?.GroupName Cart-Helper</PageTitle>
+<PageTitle>Mampf.Link @GroupService.Group?.GroupName Cart-Helper</PageTitle>
 
-@if (gs.Group != null && adminService.IsAdmin())
+@if (GroupService.Group != null && AdminService.IsAdmin())
 {
-    <h1>Left to add to Cart: @gs.Group?.GroupName</h1>
+    <h1>Left to add to Cart: @GroupService.Group?.GroupName</h1>
 
 
     <table class="table">
@@ -24,7 +24,7 @@
             <th>
                 Food
             </th>
-            @if (gs.Group!.PaymentType != PaymentType.NoPrices)
+            @if (GroupService.Group!.PaymentType != PaymentType.NoPrices)
             {
                 <th>
                     Price
@@ -36,14 +36,18 @@
         </tr>
         </thead>
         <tbody>
-        @foreach (Order order in gs.Group!.Orders)
+        @foreach (Order order in GroupService.Group!.Orders)
         {
-            @if (order.AddedToCart == true) { continue; }
+            @if (order.AddedToCart == true)
+            {
+                continue;
+            }
+
             <tr>
                 <td>
                     @order.Food
                 </td>
-                @if (gs.Group.PaymentType != PaymentType.NoPrices)
+                @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
                 {
                     <td>
                         @order.GetPrice()€
@@ -62,13 +66,15 @@
     </table>
     <br>
     <br>
-    @if (gs.Group.PaymentType != PaymentType.NoPrices)
+    @if (GroupService.Group.PaymentType != PaymentType.NoPrices)
     {
         <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
             The total will be @Order.GetPrice(CalculateTotalSum())€.</p>
     }
+
     <button class="btn btn-danger" @onclick="ResetCart">Reset cart.</button>
-}else
+}
+else
 {
-    <FourZeroThreeError />
+    <FourZeroThreeError/>
 }

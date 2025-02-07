@@ -1,8 +1,5 @@
 ﻿@page "/org/{VanitySlug}"
 @implements IDisposable
-
-@using System.Security.Cryptography
-@using System.Text.RegularExpressions
 @using GroupOrder.Data
 @using Microsoft.EntityFrameworkCore
 @using Group = GroupOrder.Data.Group
@@ -21,7 +18,8 @@
     <div class="container">
         @if (getExistingTimeOfCurrentGroup() > 120)
         {
-            <EditForm EditContext="_editContext" OnValidSubmit="Submit" FormName="group-create-form">
+            <EditForm EditContext="_editContext" OnValidSubmit="Submit"
+                      FormName="group-create-form">
                 <AntiforgeryToken/>
                 <div class="row">
                     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
@@ -71,9 +69,11 @@
                     </div>
                     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                         <div class="form-floating">
-                            <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@Model.PaymentType">
+                            <InputSelect id="payment_type" class="form-select form-control"
+                                         @bind-Value="@Model.PaymentType">
                                 <option value="@PaymentType.Pay" default>Enabled</option>
-                                <option value="@PaymentType.NoNeedToPay">Host pays everything</option>
+                                <option value="@PaymentType.NoNeedToPay">Host pays everything
+                                </option>
                                 <option value="@PaymentType.NoPrices">Disabled</option>
                             </InputSelect>
                             <label for="payment_type">Payments:</label>
@@ -88,7 +88,8 @@
                                     id="paypal_username"
                                     class="form-control"
                                     @bind-Value="Model!.PaypalUsername"/>
-                                <label for="paypal_username">Your PayPal Username (optional):</label>
+                                <label for="paypal_username">Your PayPal Username
+                                    (optional):</label>
                             </div>
                         </div>
                     }
@@ -105,17 +106,27 @@
                     </div>
                     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                         <div class="form-floating">
-                            <InputSelect id="editing_rule" class="form-select form-control" @bind-Value="@Model.EditingRule">
-                                <option value="@EditingRule.NeverAllow">Never (only Group Leader can edit)</option>
+                            <InputSelect id="editing_rule" class="form-select form-control"
+                                         @bind-Value="@Model.EditingRule">
+                                <option value="@EditingRule.NeverAllow">Never (only Group Leader can
+                                    edit)
+                                </option>
                                 @if (Model!.PaymentType == PaymentType.Pay)
                                 {
-                                    <option value="@EditingRule.AllowBeforeCartAndPaymentAndDeadline">If not in Cart, not paid and before Closing Time</option>
+                                    <option
+                                        value="@EditingRule.AllowBeforeCartAndPaymentAndDeadline">If
+                                        not in Cart, not paid and before Closing Time
+                                    </option>
                                 }
                                 else
                                 {
-                                    <option value="@EditingRule.AllowBeforeCartAndDeadline">If not in Cart and before Closing Time</option>
+                                    <option value="@EditingRule.AllowBeforeCartAndDeadline">If not
+                                        in Cart and before Closing Time
+                                    </option>
                                 }
-                                <option value="@EditingRule.AllowBeforeDeadline">If before Closing Time (not recommended, causes side effects)</option>
+                                <option value="@EditingRule.AllowBeforeDeadline">If before Closing
+                                    Time (not recommended, causes side effects)
+                                </option>
                             </InputSelect>
                             <label for="payment_type">Allow edits:</label>
                         </div>
@@ -129,14 +140,17 @@
                 </div>
             </EditForm>
         }
-        @if(getExistingTimeOfCurrentGroup() <= 120)
+        @if (getExistingTimeOfCurrentGroup() <= 120)
         {
             <div class="row">
                 <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                     <h3 class="h3 fw-normal">Welcome to @Vanity.VanityName</h3>
                 </div>
                 <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                    <p>Your current @Vanity.VanityName group is only @getExistingTimeOfCurrentGroup() minutes old. Please wait 120 minutes before creating a new one or create one with a random string <a href="/">here</a>.</p>
+                    <p>Your current @Vanity.VanityName group is
+                        only @getExistingTimeOfCurrentGroup() minutes old. Please wait 120 minutes
+                        before creating a new one or create one with a random string <a href="/">here</a>.
+                    </p>
                 </div>
             </div>
         }
@@ -148,7 +162,7 @@
                     <ul>
                         @foreach (Group group in Vanity.History.Reverse())
                         {
-                        <li><a href="/group/@group.GroupSlug">@group.GroupName</a></li>
+                            <li><a href="/group/@group.GroupSlug">@group.GroupName</a></li>
                         }
                     </ul>
                 </div>
@@ -158,5 +172,5 @@
 }
 else
 {
-    <FourZeroFourError />
+    <FourZeroFourError/>
 }

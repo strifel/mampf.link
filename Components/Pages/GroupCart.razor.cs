@@ -11,53 +11,53 @@ public partial class GroupCart
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        gs.OnGroupReload += GsOnOnGroupReload;
+        GroupService.OnGroupReload += GroupServiceOnGroupReload;
     }
 
-    private void GsOnOnGroupReload(object? sender, EventArgs e)
+    private void GroupServiceOnGroupReload(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
     }
 
     private int CalculateTotalSum()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return 0;
-        return gs.Group.Orders.Sum(o => o.Price) ?? 0;
+        return GroupService.Group.Orders.Sum(o => o.Price) ?? 0;
     }
 
     private int CalculateAddedSum()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return 0;
-        return gs.Group.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
+        return GroupService.Group.Orders.Sum(o => o.AddedToCart ?? false ? o.Price : 0) ?? 0;
     }
 
     private async void SetAdded(Order order)
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return;
-        if (!adminService.IsAdmin())
+        if (!AdminService.IsAdmin())
             return; // this theoretically should not happen
-        gs.ReloadRestriction.WaitOne();
+        GroupService.ReloadRestriction.WaitOne();
         order.AddedToCart = true;
-        await gs.Save();
-        gs.ReloadRestriction.Release();
+        await GroupService.Save();
+        GroupService.ReloadRestriction.Release();
     }
 
     private async void ResetCart()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return;
-        if (!adminService.IsAdmin())
+        if (!AdminService.IsAdmin())
             return; // this theoretically should not happen
-        gs.ReloadRestriction.WaitOne();
-        foreach (Order order in gs.Group.Orders)
+        GroupService.ReloadRestriction.WaitOne();
+        foreach (Order order in GroupService.Group.Orders)
         {
             order.AddedToCart = false;
         }
 
-        await gs.Save();
-        gs.ReloadRestriction.Release();
+        await GroupService.Save();
+        GroupService.ReloadRestriction.Release();
     }
 }

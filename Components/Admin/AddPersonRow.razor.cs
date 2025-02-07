@@ -12,21 +12,21 @@ public partial class AddPersonRow
 
     private async void AddPerson()
     {
-        if (gs.Group == null)
+        if (GroupService.Group == null)
             return;
         if (PersonName == null)
             return;
         if (PersonName.Length is > 100 or 0)
             return;
 
-        gs.ReloadRestriction.WaitOne();
+        GroupService.ReloadRestriction.WaitOne();
 
-        Person person = new Person { Group = gs.Group, Name = PersonName };
+        Person person = new Person { Group = GroupService.Group, Name = PersonName };
 
-        gs.AddPerson(person);
-        await gs.Save();
+        GroupService.AddPerson(person);
+        await GroupService.Save();
 
-        gs.ReloadRestriction.Release();
+        GroupService.ReloadRestriction.Release();
         PersonName = null;
         await OnAdded.InvokeAsync();
     }

@@ -1,11 +1,7 @@
 ﻿@page "/create"
 @implements IDisposable
-
-@using System.Security.Cryptography
-@using System.Text.RegularExpressions
 @using GroupOrder.Data
 @using Microsoft.EntityFrameworkCore
-@using Group = GroupOrder.Data.Group
 
 @rendermode InteractiveServer
 
@@ -68,7 +64,8 @@
             </div>
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <div class="form-floating">
-                    <InputSelect id="payment_type" class="form-select form-control" @bind-Value="@Model.PaymentType">
+                    <InputSelect id="payment_type" class="form-select form-control"
+                                 @bind-Value="@Model.PaymentType">
                         <option value="@PaymentType.Pay" default>Enabled</option>
                         <option value="@PaymentType.NoNeedToPay">Host pays everything</option>
                         <option value="@PaymentType.NoPrices">Disabled</option>
@@ -91,17 +88,25 @@
             }
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <div class="form-floating">
-                    <InputSelect id="editing_rule" class="form-select form-control" @bind-Value="@Model.EditingRule">
-                        <option value="@EditingRule.NeverAllow">Never (only Group Leader can edit)</option>
+                    <InputSelect id="editing_rule" class="form-select form-control"
+                                 @bind-Value="@Model.EditingRule">
+                        <option value="@EditingRule.NeverAllow">Never (only Group Leader can edit)
+                        </option>
                         @if (Model!.PaymentType == PaymentType.Pay)
                         {
-                            <option value="@EditingRule.AllowBeforeCartAndPaymentAndDeadline">If not in Cart, not paid and before Closing Time</option>
+                            <option value="@EditingRule.AllowBeforeCartAndPaymentAndDeadline">If not
+                                in Cart, not paid and before Closing Time
+                            </option>
                         }
                         else
                         {
-                            <option value="@EditingRule.AllowBeforeCartAndDeadline">If not in Cart and before Closing Time</option>
+                            <option value="@EditingRule.AllowBeforeCartAndDeadline">If not in Cart
+                                and before Closing Time
+                            </option>
                         }
-                        <option value="@EditingRule.AllowBeforeDeadline">If before Closing Time (not recommended, causes side effects)</option>
+                        <option value="@EditingRule.AllowBeforeDeadline">If before Closing Time (not
+                            recommended, causes side effects)
+                        </option>
                     </InputSelect>
                     <label for="payment_type">Allow edits:</label>
                 </div>

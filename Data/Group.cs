@@ -44,7 +44,7 @@ public class Group
     public string? PaypalUsername { get; set; }
 
     [StringLength(100, ErrorMessage = "MenuURL cannot exceed 100 characters.")]
-    public string? MenuURL { get; set; }
+    public string? MenuUrl { get; set; }
 
     [Required]
     public DateTime? ClosingTime { get; set; }
@@ -53,19 +53,19 @@ public class Group
     public ICollection<Person> Persons { get; } = new List<Person>();
 
     [Required]
-    [DefaultValue(PaymentType.PAY)]
+    [DefaultValue(PaymentType.Pay)]
     public PaymentType PaymentType { get; set; }
 
     [Required]
-    [DefaultValue(Data.EditingRule.NeverAllow)]
+    [DefaultValue(EditingRule.NeverAllow)]
     public EditingRule EditingRule { get; set; }
 }
 
 public enum PaymentType
 {
-    PAY,
-    NO_NEED_TO_PAY,
-    NO_PRICES,
+    Pay,
+    NoNeedToPay,
+    NoPrices,
 }
 
 public enum EditingRule

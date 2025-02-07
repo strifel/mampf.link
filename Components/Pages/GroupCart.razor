@@ -24,7 +24,7 @@
             <th>
                 Food
             </th>
-            @if (gs.Group!.PaymentType != PaymentType.NO_PRICES)
+            @if (gs.Group!.PaymentType != PaymentType.NoPrices)
             {
                 <th>
                     Price
@@ -43,7 +43,7 @@
                 <td>
                     @order.Food
                 </td>
-                @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
+                @if (gs.Group.PaymentType != PaymentType.NoPrices)
                 {
                     <td>
                         @order.GetPrice()€
@@ -62,7 +62,7 @@
     </table>
     <br>
     <br>
-    @if (gs.Group.PaymentType != PaymentType.NO_PRICES)
+    @if (gs.Group.PaymentType != PaymentType.NoPrices)
     {
         <p>You should have added @Order.GetPrice(CalculateAddedSum())€ to your cart.<br>
             The total will be @Order.GetPrice(CalculateTotalSum())€.</p>

@@ -91,7 +91,7 @@ public partial class MyOrder
             return 0;
         if (gs.Group == null)
             return 0;
-        if (gs.Group.PaymentType != PaymentType.PAY)
+        if (gs.Group.PaymentType != PaymentType.Pay)
             return 0;
         Person? person = gs.GetPersonByID(_personId.Value);
         if (person == null)
@@ -137,7 +137,7 @@ public partial class MyOrder
             );
         }
 
-        if (gs.Group is null || gs.Group.PaymentType != PaymentType.NO_PRICES)
+        if (gs.Group is null || gs.Group.PaymentType != PaymentType.NoPrices)
         {
             if (OrderPrice == null | OrderPrice < 0)
             {
@@ -172,7 +172,7 @@ public partial class MyOrder
 
         Order newOrder = new() { Food = OrderFood! };
 
-        if (gs.Group!.PaymentType != PaymentType.NO_PRICES)
+        if (gs.Group!.PaymentType != PaymentType.NoPrices)
         {
             newOrder.Price = (int)(OrderPrice! * 100);
         }

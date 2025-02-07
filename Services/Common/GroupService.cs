@@ -14,7 +14,6 @@ public class GroupService(
     public Group? Group { get; private set; }
     private GroupContext? _context;
 
-    public bool NotFound { get; private set; }
     public bool Loading { get; private set; }
 
     // Loads group from database
@@ -48,18 +47,12 @@ public class GroupService(
             .Include(group => group.Persons)
             .ThenInclude(person => person.Payments)
             .SingleOrDefaultAsync(c => c.GroupSlug == slug);
-        if (Group == null)
-        {
-            NotFound = true;
-        }
-        else
+        if (Group != null)
         {
             autoreloadService.GetHandlerForGroup(Group).OnGroupUpdated += OnGroupUpdated;
-            Task.Run(() =>
-            {
-                OnGroupReload?.Invoke(this, EventArgs.Empty);
-            });
+            Task.Run(() => { OnGroupReload?.Invoke(this, EventArgs.Empty); });
         }
+
         Loading = false;
     }
 

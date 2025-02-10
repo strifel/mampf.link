@@ -14,6 +14,7 @@ public partial class MyOrder
 
     private PaymentMethod? _selectedPaymentMethod;
 
+
     [Parameter]
     public string? GroupSlug { get; set; }
 
@@ -180,6 +181,8 @@ public partial class MyOrder
 
         GroupService.OnGroupReload -= GroupServiceOnGroupReload;
     }
+    
+    
 
     private bool IsOrderingClosed()
     {

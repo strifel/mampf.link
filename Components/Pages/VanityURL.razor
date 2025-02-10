@@ -92,6 +92,26 @@
                                     (optional):</label>
                             </div>
                         </div>
+                        <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                            <div class="form-floating">
+                                <InputText
+                                    placeholder=" "
+                                    id="iban"
+                                    class="form-control"
+                                    @bind-Value="Model!.IBAN"/>
+                                <label for="iban">Your IBAN (optional):</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                            <div class="form-floating">
+                                <InputText
+                                    placeholder=" "
+                                    id="bank_name"
+                                    class="form-control"
+                                    @bind-Value="Model!.BankName"/>
+                                <label for="bank_name">Your Bank name (optional):</label>
+                            </div>
+                        </div>
                     }
                     <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                         <div class="form-floating">

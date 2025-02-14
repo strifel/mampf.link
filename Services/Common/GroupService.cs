@@ -43,8 +43,6 @@ public class GroupService(
         if (_dbContext != null)
             await _dbContext.DisposeAsync();
 
-        CurrentPerson = null;
-
         // Create a new Context to not have issues with other groups
         // still loaded
         _dbContext = await dbFactory.CreateDbContextAsync();
@@ -55,6 +53,12 @@ public class GroupService(
             .Include(group => group.Persons)
             .ThenInclude(person => person.Payments)
             .FirstOrDefaultAsync();
+
+        if (CurrentPerson != null)
+        {
+            CurrentPerson = CurrentGroup?.Persons.SingleOrDefault(p => p.Id == CurrentPerson.Id);
+        }
+
         if (CurrentGroup != null)
         {
             autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated += OnGroupUpdated;
@@ -106,7 +110,7 @@ public class GroupService(
 
         await Save();
 
-        SetCurrentPersonId(person.Id);
+        CurrentPerson = person;
 
         ReloadRestriction.Release();
     }

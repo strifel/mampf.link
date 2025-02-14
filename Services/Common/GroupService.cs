@@ -115,10 +115,9 @@ public class GroupService(
         ReloadRestriction.Release();
     }
 
-    public Person? SetCurrentPersonId(int id)
+    public void SetCurrentPersonId(int id)
     {
         CurrentPerson = CurrentGroup?.Persons.SingleOrDefault(p => p.Id == id);
-        return CurrentPerson;
     }
 
     public void AddOrder(Order order, Person person)

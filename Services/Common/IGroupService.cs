@@ -35,7 +35,7 @@ public interface IGroupService
 
     // Returns the current instance of a specific person by ID
     // ReSharper disable once InconsistentNaming
-    public Person? SetCurrentPersonId(int id);
+    public void SetCurrentPersonId(int id);
 
     // Adds a specific order to the group
     // order is from person person

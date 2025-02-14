@@ -34,8 +34,7 @@ public interface IGroupService
     public void DeletePayment(Payment payment);
 
     // Adds a specific person to the group
-    // Needs a save afterwards
-    public void AddPerson(Person person);
+    public Task CreateNewPerson(string newName);
 
     // Returns the current instance of a specific person by ID
     // ReSharper disable once InconsistentNaming

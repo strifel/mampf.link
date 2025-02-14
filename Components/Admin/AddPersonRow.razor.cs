@@ -19,14 +19,8 @@ public partial class AddPersonRow
         if (PersonName.Length is > 100 or 0)
             return;
 
-        GroupService.ReloadRestriction.WaitOne();
+        await GroupService.CreateNewPerson(PersonName);
 
-        Person person = new Person { Group = GroupService.CurrentGroup, Name = PersonName };
-
-        GroupService.AddPerson(person);
-        await GroupService.Save();
-
-        GroupService.ReloadRestriction.Release();
         PersonName = null;
         await OnAdded.InvokeAsync();
     }

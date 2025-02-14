@@ -17,22 +17,13 @@ public partial class MyOrder
     [Parameter]
     public string? GroupSlug { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _editContext = new(this);
         _editContext.OnValidationRequested += HandleValidationRequested;
         _messageStore = new(_editContext);
         GroupService.OnGroupReload += GroupServiceOnGroupReload;
-        base.OnInitialized();
-    }
 
-    private void GroupServiceOnGroupReload(object? sender, EventArgs e)
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
         // find local person
         // this needs to be done here because it uses javascript interop
         if (GroupService.CurrentGroup != null && GroupService.CurrentPerson == null)
@@ -44,11 +35,14 @@ public partial class MyOrder
             {
                 GroupService.SetCurrentPersonId(personId.Value);
             }
-
-            StateHasChanged();
         }
 
-        await base.OnAfterRenderAsync(firstRender);
+        await base.OnInitializedAsync();
+    }
+
+    private void GroupServiceOnGroupReload(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async void Paid()

@@ -9,11 +9,11 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="GroupOrder.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)"/>
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     <script src="_framework/blazor.web.js"></script>
     <script src="bootstrap/bootstrap.bundle.min.js"></script>
 </body>

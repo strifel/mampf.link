@@ -22,9 +22,6 @@ public interface IGroupService
     // Reload current loaded group
     public Task ReloadGroup();
 
-    // Reload only a specific order
-    public Task ReloadOrder(Order order);
-
     // Delete specific order from group
     // Needs a save afterwards
     public void DeleteOrder(Order order);

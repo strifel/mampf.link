@@ -82,14 +82,6 @@ public class GroupService(
         await ForceLoadGroup(CurrentGroup.GroupSlug!);
     }
 
-    public async Task ReloadOrder(Order order)
-    {
-        if (_dbContext == null)
-            return;
-
-        await _dbContext.Entry(order).ReloadAsync();
-    }
-
     public void DeleteOrder(Order order)
     {
         _dbContext?.Orders.Remove(order);

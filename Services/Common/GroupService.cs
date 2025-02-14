@@ -4,6 +4,7 @@ using Data;
 using Microsoft.EntityFrameworkCore;
 
 public class GroupService(
+    ILogger<GroupService> logger,
     IDbContextFactory<GroupContext> dbFactory,
     IGroupAutoreloadService autoreloadService
 ) : IGroupService, IDisposable
@@ -12,16 +13,22 @@ public class GroupService(
 
     public Semaphore ReloadRestriction { get; } = new(1, 1);
     public Group? CurrentGroup { get; private set; }
-    private GroupContext? _context;
+    private GroupContext? _dbContext;
 
     public Person? CurrentPerson { get; private set; }
 
-    // Loads group from database
-    // Does not reload if the slug is the same
+    /// <summary>
+    /// Loads group from database
+    /// Does not reload if the slug is the samey
+    /// </summary>
+    /// <param name="slug"></param>
     public async Task LoadGroup(string slug)
     {
         if (CurrentGroup?.GroupSlug == slug)
+        {
+            logger.LogDebug("Group '{Slug}' already loaded, doing nothing", slug);
             return;
+        }
 
         await ForceLoadGroup(slug);
     }
@@ -33,20 +40,21 @@ public class GroupService(
             autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated -= OnGroupUpdated;
         }
 
-        if (_context != null)
-            await _context.DisposeAsync();
+        if (_dbContext != null)
+            await _dbContext.DisposeAsync();
 
         CurrentPerson = null;
 
         // Create a new Context to not have issues with other groups
         // still loaded
-        _context = await dbFactory.CreateDbContextAsync();
-        CurrentGroup = await _context
-            .Groups.Include(group => group.Orders)
+        _dbContext = await dbFactory.CreateDbContextAsync();
+        CurrentGroup = await _dbContext
+            .Groups.Where(c => c.GroupSlug == slug)
+            .Include(group => group.Orders)
             .ThenInclude(order => order.Person)
             .Include(group => group.Persons)
             .ThenInclude(person => person.Payments)
-            .SingleOrDefaultAsync(c => c.GroupSlug == slug);
+            .FirstOrDefaultAsync();
         if (CurrentGroup != null)
         {
             autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated += OnGroupUpdated;
@@ -66,7 +74,7 @@ public class GroupService(
 
     public async Task ReloadGroup()
     {
-        if (_context == null)
+        if (_dbContext == null)
             return;
         if (CurrentGroup == null)
             return;
@@ -76,28 +84,39 @@ public class GroupService(
 
     public async Task ReloadOrder(Order order)
     {
-        if (_context == null)
+        if (_dbContext == null)
             return;
 
-        await _context.Entry(order).ReloadAsync();
+        await _dbContext.Entry(order).ReloadAsync();
     }
 
     public void DeleteOrder(Order order)
     {
-        _context?.Orders.Remove(order);
+        _dbContext?.Orders.Remove(order);
     }
 
     public void DeletePayment(Payment payment)
     {
-        _context?.Payments.Remove(payment);
+        _dbContext?.Payments.Remove(payment);
     }
 
-    public void AddPerson(Person person)
+    public async Task CreateNewPerson(string name)
     {
         if (CurrentGroup == null)
             return;
+
+        ReloadRestriction.WaitOne();
+
+        Person person = new Person { Group = CurrentGroup, Name = name };
+
         person.Group = CurrentGroup;
-        _context?.Add(person);
+        _dbContext?.Add(person);
+
+        await Save();
+
+        SetCurrentPersonId(person.Id);
+
+        ReloadRestriction.Release();
     }
 
     public Person? SetCurrentPersonId(int id)
@@ -120,7 +139,7 @@ public class GroupService(
             order.Price = 0;
         }
 
-        _context?.Add(order);
+        _dbContext?.Add(order);
     }
 
     public void AddPayment(Payment payment, Person person)
@@ -133,15 +152,15 @@ public class GroupService(
             throw new InvalidDataException("Cant add Payment to Group without Payments");
         }
 
-        _context?.Add(payment);
+        _dbContext?.Add(payment);
     }
 
     public async Task Save()
     {
-        if (_context == null)
+        if (_dbContext == null)
             return;
 
-        await _context.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
 
         Task.Run(() =>
         {
@@ -156,7 +175,7 @@ public class GroupService(
 
     public void Dispose()
     {
-        _context?.Dispose();
+        _dbContext?.Dispose();
         if (CurrentGroup != null)
         {
             autoreloadService.GetHandlerForGroup(CurrentGroup).OnGroupUpdated -= OnGroupUpdated;

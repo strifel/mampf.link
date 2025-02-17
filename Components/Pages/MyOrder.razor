@@ -18,27 +18,12 @@
 <div class="row">
     @if (GroupService.CurrentGroup != null)
     {
+        <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+            <h2>@GroupService.CurrentGroup.GroupName</h2>
+            <GroupInfoCard></GroupInfoCard>
+        </div>
         @if (GroupService.CurrentPerson != null)
         {
-            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <h1>Hi @GroupService.CurrentPerson?.Name</h1>
-                <h2>Welcome to @GroupService.CurrentGroup.GroupName</h2>
-                <p>@GroupService.CurrentGroup.Description</p>
-                @if (GroupService.CurrentGroup.MenuUrl != null)
-                {
-                    <p>Menu is located at <a href="@GroupService.CurrentGroup.MenuUrl"
-                                             target="_blank">@GroupService.CurrentGroup.MenuUrl</a></p>
-                }
-                @if (!IsOrderingClosed())
-                {
-                    <p>Ordering is closing at @GroupService.CurrentGroup.ClosingTime!.Value.</p>
-                }
-                else
-                {
-                    <p><b>Ordering has already closed.</b></p>
-                }
-            </div>
-
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 @if (_showAllOrders)
                 {

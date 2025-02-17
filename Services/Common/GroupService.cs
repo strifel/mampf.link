@@ -17,11 +17,6 @@ public class GroupService(
 
     public Person? CurrentPerson { get; private set; }
 
-    /// <summary>
-    /// Loads group from database
-    /// Does not reload if the slug is the samey
-    /// </summary>
-    /// <param name="slug"></param>
     public async Task LoadGroup(string slug)
     {
         if (CurrentGroup?.GroupSlug == slug)

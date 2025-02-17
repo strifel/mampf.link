@@ -15,8 +15,11 @@ public interface IGroupService
 
     public Person? CurrentPerson { get; }
 
-    // Loads group by slug
-    // Does not reload if the slug is the same
+    /// <summary>
+    /// Loads group from database
+    /// Does not reload if the slug is the same
+    /// </summary>
+    /// <param name="slug">Group identifier from a URL</param>
     public Task LoadGroup(String slug);
 
     // Reload current loaded group
@@ -30,11 +33,10 @@ public interface IGroupService
     // Needs a save afterwards
     public void DeletePayment(Payment payment);
 
-    // Adds a specific person to the group
+    // Create a new person with the given name and add it to the group
     public Task CreateNewPerson(string newName);
 
-    // Returns the current instance of a specific person by ID
-    // ReSharper disable once InconsistentNaming
+    // Sets the current Person by specifying the Person ID
     public void SetCurrentPersonId(int id);
 
     // Adds a specific order to the group

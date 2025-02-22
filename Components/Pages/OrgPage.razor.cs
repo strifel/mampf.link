@@ -1,19 +1,18 @@
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using GroupOrder.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 
 namespace GroupOrder.Components.Pages;
 
-public partial class VanityURL
+public partial class OrgPage
 {
     [Parameter]
     public string? VanitySlug { get; set; }
 
     private GroupContext? _context;
     private bool _loading;
-    private Data.VanityURL? _vanityUrl;
+    private VanityURL? _vanityUrl;
 
     protected override async Task OnParametersSetAsync()
     {

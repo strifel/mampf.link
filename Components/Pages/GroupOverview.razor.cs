@@ -136,6 +136,17 @@ public partial class GroupOverview
         GroupService.ReloadRestriction.Release();
     }
 
+    private async void DeletePaymentInfo()
+    {
+        if (GroupService.CurrentGroup == null) return;
+        GroupService.ReloadRestriction.WaitOne();
+        GroupService.CurrentGroup.PaypalUsername = null;
+        GroupService.CurrentGroup.BankName = null;
+        GroupService.CurrentGroup.IBAN = null;
+        await GroupService.Save();
+        GroupService.ReloadRestriction.Release();
+    }
+
     private void Delete(Order order)
     {
         GroupService.ReloadRestriction.WaitOne();

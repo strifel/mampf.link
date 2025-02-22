@@ -72,6 +72,15 @@
             @onfocusout="SaveMenuURL"
         />
     </p>
+    
+    @if (
+        GroupService.CurrentGroup.IBAN != null ||
+        GroupService.CurrentGroup.BankName != null ||
+        GroupService.CurrentGroup.PaypalUsername != null
+    )
+    {
+        <button @onclick="DeletePaymentInfo" class="btn btn-outline-danger">Delete your personal payment information (IBAN/Paypal username)</button><br/><br/>
+    }
 
     @if (fail)
     {

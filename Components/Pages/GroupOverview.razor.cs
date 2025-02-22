@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace GroupOrder.Components.Pages;
 
+using Microsoft.JSInterop;
+
 public partial class GroupOverview
 {
     [Parameter]
@@ -34,6 +36,11 @@ public partial class GroupOverview
     private void HandleGroupChanged(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    private string GetGroupLink()
+    {
+        return NavManager.BaseUri.ToLower() + "group/" + GroupService.CurrentGroup?.GroupSlug;
     }
 
     private async void ChangeTitle(ChangeEventArgs x)
@@ -218,6 +225,11 @@ public partial class GroupOverview
         fail = false;
     }
 
+    public async void CopySharetext()
+    {
+        await JsRuntime.InvokeAsync<object>("copySharetext", GroupService.CurrentGroup?.MenuUrl, GetGroupLink(), GroupService.CurrentGroup?.ClosingTime.ToString());
+    }
+    
     public void Dispose()
     {
         NavManager.LocationChanged -= HandleLocationChanged;

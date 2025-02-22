@@ -16,6 +16,7 @@
 @inject NavigationManager NavManager
 @inject IAdminService AdminService
 @inject IGroupService GroupService
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Mampf.Link @GroupService.CurrentGroup?.GroupName</PageTitle>
 
@@ -30,13 +31,13 @@
     </h1>
     <p>
         <a id="groupLink"
-           href="@NavManager.BaseUri.ToLower()group/@GroupService.CurrentGroup!.GroupSlug">@NavManager.BaseUri.ToLower()group/@GroupService.CurrentGroup!.GroupSlug</a>
+           href="@GetGroupLink()">@GetGroupLink()</a>
         <button class="btn btn-primary"
-                onclick="navigator.clipboard.writeText(document.getElementById('groupLink').href)">
+                onclick="navigator.clipboard.writeText('@GetGroupLink()')">
             Copy Link
         </button>
         <button class="btn btn-secondary"
-                onclick="navigator.clipboard.writeText('We are ordering food🥘🍲🍕! \nLink to menu: ' + document.getElementById('menu_url').value + ' \nAdd your order here: '+document.getElementById('groupLink').href+' \nTaking orders until @GroupService.CurrentGroup.ClosingTime!.Value')">
+                @onclick="CopySharetext">
             Copy Sharetext
         </button>
     </p>

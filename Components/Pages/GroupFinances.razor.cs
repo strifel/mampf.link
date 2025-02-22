@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace GroupOrder.Components.Pages;
 
-public partial class GroupFinanze
+public partial class GroupFinances
 {
     [Parameter]
     public string? GroupSlug { get; set; }

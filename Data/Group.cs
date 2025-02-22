@@ -26,7 +26,7 @@ public class Group
 
     [Required]
     [
-        StringLength(15, ErrorMessage = "Code cannot exceed 15 characters."),
+        StringLength(16, ErrorMessage = "Admin code length cannot exceed 16 characters."),
         RegularExpression("[a-z0-9-]+", ErrorMessage = "Slug may only contain a-z and numbers.")
     ]
     public string? AdminCode { get; set; }

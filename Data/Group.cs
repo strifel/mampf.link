@@ -43,7 +43,10 @@ public class Group
     ]
     public string? PaypalUsername { get; set; }
 
-    [StringLength(100, ErrorMessage = "MenuURL cannot exceed 100 characters.")]
+    [
+        StringLength(500, ErrorMessage = "Menu URL length cannot exceed 500 characters."),
+        Url(ErrorMessage = "Menu URL is not valid.")
+    ]
     public string? MenuUrl { get; set; }
 
     [Required]

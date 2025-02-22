@@ -48,11 +48,10 @@ public class Group
 
     [Required]
     public DateTime? ClosingTime { get; set; }
-    
-    public string? IBAN { get; set; }
-    
-    [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
 
+    public string? IBAN { get; set; }
+
+    [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters.")]
     public string? BankName { get; set; }
 
     public ICollection<Order> Orders { get; } = new List<Order>();
@@ -69,20 +68,38 @@ public class Group
     // ReSharper disable once InconsistentNaming
     public string? GetPaymentQR(Person person)
     {
-        if (BankName == null || IBAN == null) return null;
+        if (BankName == null || IBAN == null)
+            return null;
 
-        return "BCDBREAK" + // has to be BCD
-               "002BREAK" + // 002 = EWR, so no BIC needed
-               "1BREAK" + // 1=UTF-8
-               "INSTBREAK" + // Instant payment
-               "BREAK" + // no BIC
-               BankName + "BREAK" + // legal name, will be checked by bank
-               IBAN.Replace(" ", "").Replace("-", "") + "BREAK" + // IBAN
-               "EUR" + Order.GetPrice(person.GetPriceToPay()) + "BREAK" + // Amount
-               "BREAK" + // Purpose (DTA)
-               "BREAK" + // Remittance Reference (ISO 11649 RF)
-               GroupName + " (" + person.Name + ")BREAK"; // Remittance Text
-                         // Information
+        return "BCDBREAK"
+            + // has to be BCD
+            "002BREAK"
+            + // 002 = EWR, so no BIC needed
+            "1BREAK"
+            + // 1=UTF-8
+            "INSTBREAK"
+            + // Instant payment
+            "BREAK"
+            + // no BIC
+            BankName
+            + "BREAK"
+            + // legal name, will be checked by bank
+            IBAN.Replace(" ", "").Replace("-", "")
+            + "BREAK"
+            + // IBAN
+            "EUR"
+            + Order.GetPrice(person.GetPriceToPay())
+            + "BREAK"
+            + // Amount
+            "BREAK"
+            + // Purpose (DTA)
+            "BREAK"
+            + // Remittance Reference (ISO 11649 RF)
+            GroupName
+            + " ("
+            + person.Name
+            + ")BREAK"; // Remittance Text
+        // Information
     }
 }
 

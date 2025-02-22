@@ -5,8 +5,12 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.WebUtilities;
 
-public class GroupAdminService(NavigationManager navManager, IGroupService groupService, ProtectedLocalStorage protectedLocalStorage, ILogger<GroupService> logger)
-    : IAdminService
+public class GroupAdminService(
+    NavigationManager navManager,
+    IGroupService groupService,
+    ProtectedLocalStorage protectedLocalStorage,
+    ILogger<GroupService> logger
+) : IAdminService
 {
     private string? _adminCode;
     private bool _initialized = false;
@@ -47,20 +51,28 @@ public class GroupAdminService(NavigationManager navManager, IGroupService group
     private async Task LoadAdminCode()
     {
         logger.LogDebug("Starting to fetch admin code");
-        
+
         string? adminCode = null;
-        
+
         // First try loading from local storage
         if (groupService.CurrentGroup != null)
         {
-            adminCode = (await protectedLocalStorage.GetAsync<string>("grouporder_admin_" + groupService.CurrentGroup.Id)).Value;
-            logger.LogDebug(adminCode == null ? "Did not find admin code in local storage" : "Found admin code in local storage");
+            adminCode = (
+                await protectedLocalStorage.GetAsync<string>(
+                    "grouporder_admin_" + groupService.CurrentGroup.Id
+                )
+            ).Value;
+            logger.LogDebug(
+                adminCode == null
+                    ? "Did not find admin code in local storage"
+                    : "Found admin code in local storage"
+            );
         }
         else
         {
             logger.LogDebug("Not fetching from local storage as no group is known");
         }
-        
+
         // Let URL override
         if (
             navManager.Uri.Contains("?")
@@ -73,13 +85,15 @@ public class GroupAdminService(NavigationManager navManager, IGroupService group
             if (adminCode != code && groupService.CurrentGroup != null)
             {
                 logger.LogDebug("Writing admin token to local storage");
-                await protectedLocalStorage.SetAsync("grouporder_admin_" + groupService.CurrentGroup.Id, (string) code!);
+                await protectedLocalStorage.SetAsync(
+                    "grouporder_admin_" + groupService.CurrentGroup.Id,
+                    (string)code!
+                );
             }
-            
+
             adminCode = code;
         }
 
         _adminCode = adminCode;
-
     }
 }

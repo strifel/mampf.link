@@ -38,7 +38,7 @@ public partial class GroupOverview
     {
         InvokeAsync(StateHasChanged);
     }
-    
+
     private void HandleAdminCodeChanged(object? sender, EventArgs e)
     {
         StateHasChanged();
@@ -151,7 +151,8 @@ public partial class GroupOverview
 
     private async void DeletePaymentInfo()
     {
-        if (GroupService.CurrentGroup == null) return;
+        if (GroupService.CurrentGroup == null)
+            return;
         GroupService.ReloadRestriction.WaitOne();
         GroupService.CurrentGroup.PaypalUsername = null;
         GroupService.CurrentGroup.BankName = null;
@@ -233,9 +234,14 @@ public partial class GroupOverview
 
     public async void CopySharetext()
     {
-        await JsRuntime.InvokeAsync<object>("copySharetext", GroupService.CurrentGroup?.MenuUrl, GetGroupLink(), GroupService.CurrentGroup?.ClosingTime.ToString());
+        await JsRuntime.InvokeAsync<object>(
+            "copySharetext",
+            GroupService.CurrentGroup?.MenuUrl,
+            GetGroupLink(),
+            GroupService.CurrentGroup?.ClosingTime.ToString()
+        );
     }
-    
+
     public void Dispose()
     {
         NavManager.LocationChanged -= HandleLocationChanged;

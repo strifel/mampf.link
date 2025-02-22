@@ -8,6 +8,8 @@ public partial class GroupCart
     [Parameter]
     public string? GroupSlug { get; set; }
 
+    private Stack<int> _undoStack = new();
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -42,9 +44,36 @@ public partial class GroupCart
         GroupService.ReloadRestriction.WaitOne();
         order.AddedToCart = true;
         await GroupService.Save();
+        _undoStack.Push(order.Id);
         GroupService.ReloadRestriction.Release();
     }
 
+    private async void UndoAdd()
+    {
+        if (_undoStack.Count == 0)
+            return;
+        if (GroupService.CurrentGroup == null)
+            return;
+        if (!AdminService.IsAdmin())
+            return; // this theoretically should not happen
+        GroupService.ReloadRestriction.WaitOne();
+
+        int orderId = _undoStack.Pop();
+        Order? order = GroupService.CurrentGroup.Orders.FirstOrDefault((order) => order.Id == orderId);
+        
+        if (order == null)
+        {
+            GroupService.ReloadRestriction.Release();
+            return;
+        }
+
+        order.AddedToCart = false;
+        await GroupService.Save();
+        
+        GroupService.ReloadRestriction.Release();
+        
+    }
+    
     private async void ResetCart()
     {
         if (GroupService.CurrentGroup == null)
@@ -59,5 +88,7 @@ public partial class GroupCart
 
         await GroupService.Save();
         GroupService.ReloadRestriction.Release();
+        
+        _undoStack.Clear();
     }
 }

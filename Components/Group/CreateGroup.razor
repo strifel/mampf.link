@@ -101,17 +101,6 @@
                 </div>
             </div>
         }
-        @*<div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-            <div class="form-floating">
-                <InputText
-                    placeholder=" "
-                    type="password"
-                    id="admincode_input"
-                    class="form-control"
-                    @bind-Value="VanityAdminCodeInput"/>
-                <label for="admincode_input">Organization password:</label>
-            </div>
-        </div>*@
         <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
             <div class="form-floating">
                 <InputSelect id="editing_rule" class="form-select form-control"
@@ -136,6 +125,20 @@
                 <label for="payment_type">Allow edits:</label>
             </div>
         </div>
+        @if (OrgPassword != null)
+        {
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
+                    <InputText
+                        placeholder=" "
+                        type="password"
+                        id="admincode_input"
+                        class="form-control"
+                        @bind-Value="OrgPasswordInput"/>
+                    <label for="admincode_input">Organization password:</label>
+                </div>
+            </div>
+        }
         <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
             <div>
                 <ValidationSummary/>

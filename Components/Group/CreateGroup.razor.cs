@@ -7,11 +7,25 @@ namespace GroupOrder.Components.Group;
 
 public partial class CreateGroup
 {
-    public string? OrgName { get; set; } = null;
+    [Parameter]
+    public string? OrgName { get; set; }
+
+    [Parameter]
+    public string? OrgPassword { get; set; }
+
+    [Parameter]
+    public Action<Data.Group>? CustomSubmitCallback { get; set; }
+
+    [Parameter]
+    public string? DefaultGroupName { get; set; }
 
     private EditContext? _editContext;
 
-    [SupplyParameterFromForm] private Data.Group? Model { get; set; }
+    [SupplyParameterFromForm]
+    private Data.Group? Model { get; set; }
+
+    [SupplyParameterFromForm]
+    public string? OrgPasswordInput { get; set; }
 
     private ValidationMessageStore? _messageStore;
 
@@ -26,6 +40,14 @@ public partial class CreateGroup
         _editContext = new(Model);
         _editContext.OnValidationRequested += HandleValidationRequested;
         _messageStore = new(_editContext);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Model != null && DefaultGroupName != null)
+        {
+            Model.GroupName = DefaultGroupName;
+        }
     }
 
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs e)
@@ -54,8 +76,7 @@ public partial class CreateGroup
 
         if (Model.ClosingTime < DateTime.Now)
         {
-            _messageStore?.Add(() => Model.ClosingTime,
-                "Closing time must be in the future.");
+            _messageStore?.Add(() => Model.ClosingTime, "Closing time must be in the future.");
         }
 
         if (
@@ -63,8 +84,15 @@ public partial class CreateGroup
             && Model.PaymentType != PaymentType.Pay
         )
         {
-            _messageStore?.Add(() => Model.EditingRule,
-                "Editing Rule is invalid, please reselect.");
+            _messageStore?.Add(
+                () => Model.EditingRule,
+                "Editing Rule is invalid, please reselect."
+            );
+        }
+
+        if (OrgPassword != null && OrgPassword != OrgPasswordInput)
+        {
+            _messageStore?.Add(() => OrgPasswordInput!, "Organization password is invalid.");
         }
     }
 
@@ -78,12 +106,20 @@ public partial class CreateGroup
 
     private void Submit()
     {
-        using var context = DbContextFactory.CreateDbContext();
-        context.Add(Model!);
-        context.SaveChanges();
+        if (CustomSubmitCallback is not null)
+        {
+            Logger.LogDebug("Calling CustomSubmitCallback");
+            CustomSubmitCallback(Model!);
+        }
+        else
+        {
+            using var context = DbContextFactory.CreateDbContext();
+            context.Add(Model!);
+            context.SaveChanges();
 
-        NavigationManager.NavigateTo(
-            $"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}"
-        );
+            NavigationManager.NavigateTo(
+                $"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}"
+            );
+        }
     }
 }

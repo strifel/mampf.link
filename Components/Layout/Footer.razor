@@ -1,21 +1,30 @@
-<nav class="navbar fixed-bottom bg-body-secondary">
-    <div class="container nav-justified">
-        <div class="navbar-text navbar-item">
-            <a href="https://github.com/strifel/mampf.link">Mampf.Link is open source software
-                under GPL-2.0</a>
-        </div>
-        <div class="navbar-text navbar-item float-end">
-            <a href="#">Back to top</a>
-        </div>
-
+<footer class="py-2 border-top bg-body-secondary">
+    <ul class="nav nav-fill">
+        <li class="nav-item">
+            <a class="nav-link px-2 text-body-secondary"
+               href="https://github.com/strifel/mampf.link">
+                Mampf.Link is open source software under GPL-2.0
+            </a>
+        </li>
         @if (Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT") != null)
         {
-            <a href="@Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT")" class="mb-1"
-               style="padding-right: .25rem">Impressum</a>
+            <li class="nav-item">
+                <a class="nav-link px-2 text-body-secondary"
+                   href="@Environment.GetEnvironmentVariable("MAMPFLINK_IMPRINT")">
+                    Impressum
+                </a>
+            </li>
         }
         @if (Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY") != null)
         {
-            <a href="@Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY")" class="mb-1">Datenschutz/Privacy</a>
+            <li class="nav-item">
+                <a class="nav-link px-2 text-body-secondary"
+                   href="@Environment.GetEnvironmentVariable("MAMPFLINK_PRIVACY")">
+                    Datenschutz/Privacy
+                </a>
+            </li>
         }
-    </div>
-</nav>
+        <li class="nav-item">
+            <a class="nav-link px-2 text-body-secondary" href="#">Back to top</a></li>
+    </ul>
+</footer>

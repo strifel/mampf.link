@@ -14,6 +14,7 @@ public partial class GroupFinanze
     {
         await base.OnParametersSetAsync();
         GroupService.OnGroupReload += GroupServiceOnGroupReload;
+        AdminService.CodeChanged += HandleAdminCodeChanged;
     }
 
     private void GroupServiceOnGroupReload(object? sender, EventArgs e)
@@ -43,6 +44,7 @@ public partial class GroupFinanze
     public void Dispose()
     {
         GroupService.OnGroupReload -= GroupServiceOnGroupReload;
+        AdminService.CodeChanged -= HandleAdminCodeChanged;
     }
 
     private void Paid(Person person)
@@ -71,5 +73,10 @@ public partial class GroupFinanze
         GroupService.AddPayment(payment, person);
         GroupService.Save();
         GroupService.ReloadRestriction.Release();
+    }
+    
+    private void HandleAdminCodeChanged(object? sender, EventArgs e)
+    {
+        StateHasChanged();
     }
 }

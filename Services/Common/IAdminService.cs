@@ -8,7 +8,7 @@ public interface IAdminService
     public event EventHandler? CodeChanged;
 
     // Call this in OnParametersSet
-    public void Initialize();
+    public Task Initialize();
 
     // Returns if the user has admin privileges in
     // the current context (e.g. a group)

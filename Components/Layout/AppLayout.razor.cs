@@ -11,15 +11,13 @@ public partial class AppLayout
 
     protected override async Task OnParametersSetAsync()
     {
-        AdminService.Initialize();
         if (RouteData?.RouteValues.ContainsKey("GroupSlug") == true)
         {
             await GroupService.LoadGroup(
                 (string)RouteData?.RouteValues.GetValueOrDefault("GroupSlug")!
             );
-            StateHasChanged();
         }
-
+        await AdminService.Initialize();
         await base.OnParametersSetAsync();
         NavManager.LocationChanged += HandleLocationChanged;
         AdminService.CodeChanged += HandleCodeChanged;

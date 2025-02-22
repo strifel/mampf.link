@@ -58,7 +58,7 @@
                     </td>
                 }
                 <td>
-                    <button class="primary" @onclick="() => SetAdded(order)">Added</button>
+                    <button @onclick="() => SetAdded(order)">Added</button>
                 </td>
             </tr>
         }
@@ -72,6 +72,10 @@
             The total will be @Order.GetPrice(CalculateTotalSum())€.</p>
     }
 
+    @if (_undoStack.Count > 0)
+    {
+        <button class="btn btn-warning" style="margin-right: 20px" @onclick="UndoAdd">Undo</button>
+    }
     <button class="btn btn-danger" @onclick="ResetCart">Reset cart.</button>
 }
 else

@@ -69,8 +69,10 @@ public partial class CreateGroup
         }
 
         if (
-            Model.IBAN != null &&
-            !new Regex("^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?$").IsMatch(Model!.IBAN)
+            Model.IBAN != null
+            && !new Regex(
+                "^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?$"
+            ).IsMatch(Model!.IBAN)
         )
         {
             _messageStore?.Add(() => Model!, "Please enter no or a valid IBAN.");
@@ -82,9 +84,15 @@ public partial class CreateGroup
         }
 
         // Check if not both are filled/empty
-        if ((Model.BankName == null && Model.IBAN != null) || (Model.BankName != null && Model.IBAN == null))
+        if (
+            (Model.BankName == null && Model.IBAN != null)
+            || (Model.BankName != null && Model.IBAN == null)
+        )
         {
-            _messageStore?.Add(() => Model!, "BankName and IBAN must both be empty or both be filled.");
+            _messageStore?.Add(
+                () => Model!,
+                "BankName and IBAN must both be empty or both be filled."
+            );
         }
 
         if (Model!.ClosingTime == null || Model!.ClosingTime < DateTime.Now)

@@ -60,8 +60,10 @@ public partial class GroupCart
         GroupService.ReloadRestriction.WaitOne();
 
         int orderId = _undoStack.Pop();
-        Order? order = GroupService.CurrentGroup.Orders.FirstOrDefault((order) => order.Id == orderId);
-        
+        Order? order = GroupService.CurrentGroup.Orders.FirstOrDefault(
+            (order) => order.Id == orderId
+        );
+
         if (order == null)
         {
             GroupService.ReloadRestriction.Release();
@@ -70,11 +72,10 @@ public partial class GroupCart
 
         order.AddedToCart = false;
         await GroupService.Save();
-        
+
         GroupService.ReloadRestriction.Release();
-        
     }
-    
+
     private async void ResetCart()
     {
         if (GroupService.CurrentGroup == null)
@@ -89,7 +90,7 @@ public partial class GroupCart
 
         await GroupService.Save();
         GroupService.ReloadRestriction.Release();
-        
+
         _undoStack.Clear();
     }
 

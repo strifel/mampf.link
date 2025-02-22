@@ -74,7 +74,7 @@ public partial class GroupFinanze
         GroupService.Save();
         GroupService.ReloadRestriction.Release();
     }
-    
+
     private void HandleAdminCodeChanged(object? sender, EventArgs e)
     {
         StateHasChanged();

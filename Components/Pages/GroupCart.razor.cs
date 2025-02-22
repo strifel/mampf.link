@@ -12,6 +12,7 @@ public partial class GroupCart
     {
         await base.OnParametersSetAsync();
         GroupService.OnGroupReload += GroupServiceOnGroupReload;
+        AdminService.CodeChanged += HandleAdminCodeChanged;
     }
 
     private void GroupServiceOnGroupReload(object? sender, EventArgs e)
@@ -59,5 +60,16 @@ public partial class GroupCart
 
         await GroupService.Save();
         GroupService.ReloadRestriction.Release();
+    }
+
+    public void Dispose()
+    {
+        GroupService.OnGroupReload -= GroupServiceOnGroupReload;
+        AdminService.CodeChanged -= HandleAdminCodeChanged;
+    }
+
+    private void HandleAdminCodeChanged(object? sender, EventArgs e)
+    {
+        StateHasChanged();
     }
 }

@@ -24,6 +24,7 @@ public partial class GroupOverview
         await base.OnParametersSetAsync();
         NavManager.LocationChanged += HandleLocationChanged;
         GroupService.OnGroupReload += HandleGroupChanged;
+        AdminService.CodeChanged += HandleAdminCodeChanged;
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs? e)
@@ -34,6 +35,11 @@ public partial class GroupOverview
     private void HandleGroupChanged(object? sender, EventArgs e)
     {
         InvokeAsync(StateHasChanged);
+    }
+    
+    private void HandleAdminCodeChanged(object? sender, EventArgs e)
+    {
+        StateHasChanged();
     }
 
     private async void ChangeTitle(ChangeEventArgs x)
@@ -222,5 +228,6 @@ public partial class GroupOverview
     {
         NavManager.LocationChanged -= HandleLocationChanged;
         GroupService.OnGroupReload -= HandleGroupChanged;
+        AdminService.CodeChanged -= HandleAdminCodeChanged;
     }
 }

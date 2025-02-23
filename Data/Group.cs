@@ -52,6 +52,10 @@ public class Group
     [Required]
     public DateTime? ClosingTime { get; set; }
 
+    [Required]
+    [DefaultValue(false)]
+    public bool PayAfterClosingTime { get; set; } = false;
+
     [RegularExpression(
         "^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?$",
         ErrorMessage = "IBAN is not valid."

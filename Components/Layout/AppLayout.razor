@@ -19,18 +19,18 @@
     </div>
 </header>
 
-@if (GroupService.CurrentGroup != null)
-{
-    <main>
-        <section class="py-5 container">
+<main class="mb-auto">
+    <section class="py-5 container">
+        @if (GroupService.CurrentGroup != null)
+        {
             @Body
-        </section>
-    </main>
-}
-else
-{
-    <FourZeroFourError/>
-}
+        }
+        else
+        {
+            <FourZeroFourError/>
+        }
+    </section>
+</main>
 
 <Footer></Footer>
 

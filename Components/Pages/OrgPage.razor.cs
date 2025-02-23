@@ -39,16 +39,13 @@ public partial class OrgPage
         if (_context == null)
             return;
 
-        // Remove old Vanity
-
+        // Generate a new unique slug for the group that previously used the vanity URL
         if (_vanityUrl.History.Count > 0)
         {
-            _vanityUrl.History.Last().GroupSlug = RandomNumberGenerator.GetHexString(10);
+            _vanityUrl.History.Last().GroupSlug = RandomNumberGenerator.GetHexString(10, true);
         }
 
-        // Add new Vanity
-
-        group.AdminCode = RandomNumberGenerator.GetHexString(16, true);
+        // Set slug of new group to vanity URL
         group.GroupSlug = _vanityUrl.Slug;
         _vanityUrl.History.Add(group);
         _vanityUrl.UsedAt = DateTime.Now;

@@ -59,10 +59,11 @@ public partial class CreateGroup
             return;
         }
 
+        // Fill generated values, as the DataAnnotationsValidator runs after this
         Model.GroupSlug ??= RandomNumberGenerator.GetHexString(10, true);
         Model.AdminCode ??= RandomNumberGenerator.GetHexString(16, true);
 
-        // Check if not both are filled/empty
+        // Check that IBAN and bank name are either both set or both empty
         if (
             (Model.BankName == null && Model.IBAN != null)
             || (Model.BankName != null && Model.IBAN == null)

@@ -138,11 +138,20 @@
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                @if (GetPriceToPay() > 0)
+                @if (GetPriceToPay() != 0 && GroupService.CurrentGroup.PayAfterClosingTime && !IsOrderingClosed())
+                {
+                    <h2>Payments</h2>
+                    <p>Please wait till after the Closing Time (@GroupService.CurrentGroup.ClosingTime) to pay.</p>
+                }
+                else if (GetPriceToPay() > 0)
                 {
                     <h2>Pay here!</h2>
                     <p>
                         You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader.
+                        @if (GroupService.CurrentGroup.ShippingCost > 0)
+                        {
+                            <span>This includes @Order.GetPrice(GroupService.CurrentGroup.GetShippingCostPerPerson())€ shipping cost.</span>
+                        }
                         <br/>
                         Please mark your Payment as Paid after you have paid the group leader.
                     </p>
@@ -152,12 +161,14 @@
                             correct amount to pay back the group leader.</p>
                         <a class="btn btn-primary" style="margin-right: 2px" target="_blank"
                            href="https://www.paypal.com/paypalme/@GroupService.CurrentGroup.PaypalUsername/@Order.GetPrice(GetPriceToPay())">Send
-                            money via Paypal</a><br/><br/>
+                            money via Paypal</a>
+                        <br/>
+                        <br/>
                     }
-                    
+
                     @if (GroupService.CurrentGroup.GetPaymentQR(GroupService.CurrentPerson!) != null)
                     {
-                        <PaymentQR Content="@GroupService.CurrentGroup.GetPaymentQR(GroupService.CurrentPerson!)" />
+                        <PaymentQR Content="@GroupService.CurrentGroup.GetPaymentQR(GroupService.CurrentPerson!)"/>
                     }
 
                     <p>Afterwards: mark as paid with

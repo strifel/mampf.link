@@ -71,16 +71,19 @@
         </div>
         @if (Model!.PaymentType == PaymentType.Pay)
         {
-            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                <div class="form-floating">
-                    <InputSelect id="payment_time" class="form-select form-control"
-                                 @bind-Value="@Model.PayAfterClosingTime">
-                        <option value="false" default>Always allow payments</option>
-                        <option value="true">Only allow payments after deadline</option>
-                    </InputSelect>
-                    <label for="payment_time">Payment time:</label>
+            @if (Model!.ShippingCost == 0)
+            {
+                <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                    <div class="form-floating">
+                        <InputSelect id="payment_time" class="form-select form-control"
+                                     @bind-Value="@Model.PayAfterClosingTime">
+                            <option value="false" default>Always allow payments</option>
+                            <option value="true">Only allow payments after deadline</option>
+                        </InputSelect>
+                        <label for="payment_time">Payment time:</label>
+                    </div>
                 </div>
-            </div>
+            }
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
                 <div class="form-floating">
                     <InputText
@@ -110,6 +113,21 @@
                         class="form-control"
                         @bind-Value="Model!.BankName"/>
                     <label for="bank_name">Your Bank name (optional):</label>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
+                <div class="form-floating">
+                    <input
+                        type="number"
+                        id="bank_name"
+                        class="form-control"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        placeholder="0"
+                        @oninput="(x) => Model.ShippingCost = int.TryParse((string?) x.Value, out var i) ? i * 100 : 0"
+                        />
+                    <label for="bank_name">Shipping cost (optional):</label>
                 </div>
             </div>
         }

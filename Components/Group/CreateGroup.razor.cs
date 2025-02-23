@@ -65,6 +65,9 @@ public partial class CreateGroup
         Model.GroupSlug ??= RandomNumberGenerator.GetHexString(10, true);
         Model.AdminCode ??= RandomNumberGenerator.GetHexString(16, true);
 
+        // Ensure PayAfterClosingTime is true if ShippingCost is above 0
+        Model.PayAfterClosingTime = Model.ShippingCost > 0 || Model.PayAfterClosingTime;
+
         // Check that IBAN and bank name are either both set or both empty
         if (
             (Model.BankName == null && Model.IBAN != null)

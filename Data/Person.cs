@@ -24,12 +24,13 @@ public class Person
     // Returns the price that has no pending or confirmed payment
     public int GetPriceToPay(bool requireConfirmed = false)
     {
+        int shippingCost = Group.GetShippingCostPerPerson();
         if (requireConfirmed)
         {
-            return Orders.Sum(o => o.Price)
-                    - Payments.Sum(p => (p.PaymentConfirmed ?? false) ? p.Amount : 0)
-                ?? 0;
+            return Orders.Sum(o => o.Price ?? 0)
+                - Payments.Sum(p => (p.PaymentConfirmed ?? false) ? (p.Amount ?? 0) : 0)
+                + shippingCost;
         }
-        return Orders.Sum(o => o.Price) - Payments.Sum(p => p.Amount) ?? 0;
+        return Orders.Sum(o => o.Price ?? 0) - Payments.Sum(p => p.Amount ?? 0) + shippingCost;
     }
 }

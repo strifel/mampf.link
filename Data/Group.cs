@@ -78,35 +78,23 @@ public class Group
         if (BankName == null || IBAN == null)
             return null;
 
-        return "BCDBREAK"
-            + // has to be BCD
-            "002BREAK"
-            + // 002 = EWR, so no BIC needed
-            "1BREAK"
-            + // 1=UTF-8
-            "INSTBREAK"
-            + // Instant payment
-            "BREAK"
-            + // no BIC
-            BankName
-            + "BREAK"
-            + // legal name, will be checked by bank
-            IBAN.Replace(" ", "").Replace("-", "")
-            + "BREAK"
-            + // IBAN
-            "EUR"
-            + Order.GetPrice(person.GetPriceToPay())
-            + "BREAK"
-            + // Amount
-            "BREAK"
-            + // Purpose (DTA)
-            "BREAK"
-            + // Remittance Reference (ISO 11649 RF)
-            GroupName
-            + " ("
-            + person.Name
-            + ")BREAK"; // Remittance Text
-        // Information
+        return string.Join(
+            "BREAK",
+            [
+                "BCD", // has to be BCD
+                "002", // 002 = EWR, so no BIC needed
+                "1", // 1=UTF-8
+                "INST", // Instant payment
+                "", // no BIC
+                BankName, // legal name, will be checked by bank
+                IBAN.Replace(" ", "").Replace("-", ""), // IBAN
+                $"EUR{Order.GetPrice(person.GetPriceToPay())}", // Amount
+                "", // Purpose (DTA)
+                "", // Remittance Reference (ISO 11649 RF)
+                $"{GroupName} ({person.Name})", // Remittance Text
+                "", // Information
+            ]
+        );
     }
 }
 

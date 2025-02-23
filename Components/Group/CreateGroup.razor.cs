@@ -27,6 +27,8 @@ public partial class CreateGroup
     [SupplyParameterFromForm]
     public string? OrgPasswordInput { get; set; }
 
+    private bool _savingInProgress;
+
     private ValidationMessageStore? _messageStore;
 
     protected override void OnInitialized()
@@ -107,6 +109,8 @@ public partial class CreateGroup
 
     private void Submit()
     {
+        _savingInProgress = true;
+
         if (CustomSubmitCallback is not null)
         {
             Logger.LogDebug("Calling CustomSubmitCallback");
@@ -114,13 +118,17 @@ public partial class CreateGroup
         }
         else
         {
+            Logger.LogDebug("Submitting Group");
             using var context = DbContextFactory.CreateDbContext();
+            Logger.LogDebug("DB context created");
             context.Add(Model!);
             context.SaveChanges();
+            Logger.LogDebug("DB changes saved");
 
             NavigationManager.NavigateTo(
                 $"/group/{Model!.GroupSlug}/overview?admin={Model!.AdminCode}"
             );
+            Logger.LogDebug("Navigated");
         }
     }
 }

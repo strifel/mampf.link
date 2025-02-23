@@ -1,6 +1,8 @@
 @using GroupOrder.Data
 @using Microsoft.EntityFrameworkCore
 
+@implements IDisposable
+
 @inject IDbContextFactory<GroupContext> DbContextFactory
 @inject NavigationManager NavigationManager
 @inject ILogger<CreateGroup> Logger
@@ -143,7 +145,17 @@
             <div>
                 <ValidationSummary/>
             </div>
-            <button class="btn btn-primary" type="submit">Create Group</button>
+            <button class="btn btn-primary" type="submit" disabled="@_savingInProgress">
+                @if (_savingInProgress)
+                {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    <span role="status">Saving...</span>
+                }
+                else
+                {
+                    <span>Create Group</span>
+                }
+            </button>
         </div>
     </div>
 </EditForm>

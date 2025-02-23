@@ -52,9 +52,15 @@ public class Group
     [Required]
     public DateTime? ClosingTime { get; set; }
 
-    [Required]
-    [DefaultValue(false)]
+    [Required, DefaultValue(false)]
     public bool PayAfterClosingTime { get; set; } = false;
+
+    [
+        Required(ErrorMessage = "A shipping cost is required, but can be 0."),
+        DefaultValue(0),
+        Range(0, 10000, ErrorMessage = "Shipping cost has to be between 0 € and 100 €.")
+    ]
+    public int ShippingCost { get; set; } = 0;
 
     [RegularExpression(
         "^([A-Z]{2}[ \\-]?[0-9]{2})(?=(?:[ \\-]?[A-Z0-9]){9,30}$)((?:[ \\-]?[A-Z0-9]{3,5}){2,7})([ \\-]?[A-Z0-9]{1,3})?$",
@@ -99,6 +105,14 @@ public class Group
                 "", // Information
             ]
         );
+    }
+
+    public int GetShippingCostPerPerson()
+    {
+        int payingPersons = Persons.Count(p => p.Orders.Count > 0);
+        if (payingPersons == 0)
+            return ShippingCost;
+        return ShippingCost / payingPersons;
     }
 }
 

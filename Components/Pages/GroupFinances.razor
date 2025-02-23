@@ -28,7 +28,7 @@
     {
         <div class="card" style="width: 100%; margin-bottom: 1rem">
             <div class="card-header">
-                @person.Name (@Order.GetPrice(person.Orders.Sum(o => o.Price) ?? 0)€)
+                @person.Name (@Order.GetPrice(person.Orders.Sum(o => o.Price) ?? 0)€ + @Order.GetPrice(GroupService.CurrentGroup!.GetShippingCostPerPerson())€ Shipping)
                 @if (person.Payments.Sum(p => ((p.PaymentConfirmed ?? false) ? 0 : 1)) > 0)
                 {
                     <span style="color: yellow"> (Payments unconfirmed)</span>

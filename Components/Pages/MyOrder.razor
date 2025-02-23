@@ -138,7 +138,7 @@
             </div>
 
             <div class="col-sm-12 col-lg-5 offset-lg-3 mb-3">
-                @if (GetPriceToPay() != 0 && GroupService.CurrentGroup.PayAfterClosingTime)
+                @if (GetPriceToPay() != 0 && GroupService.CurrentGroup.PayAfterClosingTime && !IsOrderingClosed())
                 {
                     <h2>Payments</h2>
                     <p>Please wait till after the Closing Time (@GroupService.CurrentGroup.ClosingTime) to pay.</p>
@@ -148,6 +148,10 @@
                     <h2>Pay here!</h2>
                     <p>
                         You still need to pay @Order.GetPrice(GetPriceToPay())€ to the group leader.
+                        @if (GroupService.CurrentGroup.ShippingCost > 0)
+                        {
+                            <span>This includes @Order.GetPrice(GroupService.CurrentGroup.GetShippingCostPerPerson())€ shipping cost.</span>
+                        }
                         <br/>
                         Please mark your Payment as Paid after you have paid the group leader.
                     </p>

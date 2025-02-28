@@ -58,7 +58,7 @@ public class Group
     )]
     public string? IBAN { get; set; }
 
-    [StringLength(100, ErrorMessage = "Bank name length cannot exceed 100 characters.")]
+    [StringLength(100, ErrorMessage = "Account holder name length cannot exceed 100 characters.")]
     public string? BankName { get; set; }
 
     public ICollection<Order> Orders { get; } = new List<Order>();

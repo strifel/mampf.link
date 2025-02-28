@@ -65,7 +65,7 @@ public partial class CreateGroup
         Model.GroupSlug ??= RandomNumberGenerator.GetHexString(10, true);
         Model.AdminCode ??= RandomNumberGenerator.GetHexString(16, true);
 
-        // Check that IBAN and bank name are either both set or both empty
+        // Check that IBAN and account holder are either both set or both empty
         if (
             (Model.BankName == null && Model.IBAN != null)
             || (Model.BankName != null && Model.IBAN == null)
@@ -73,7 +73,7 @@ public partial class CreateGroup
         {
             _messageStore?.Add(
                 () => Model,
-                "Bank name and IBAN must both be empty or both be filled."
+                "Account holder name and IBAN must both be empty or both be filled."
             );
         }
 

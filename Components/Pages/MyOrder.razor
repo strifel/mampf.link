@@ -157,6 +157,7 @@
                     
                     @if (GroupService.CurrentGroup.GetPaymentQR(GroupService.CurrentPerson!) != null)
                     {
+                        <p>You can use the below QR code to send the money to @GroupService.CurrentGroup.BankName with IBAN @GroupService.CurrentGroup.IBAN</p>
                         <PaymentQR Content="@GroupService.CurrentGroup.GetPaymentQR(GroupService.CurrentPerson!)" />
                     }
 

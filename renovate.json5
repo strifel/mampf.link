@@ -1,0 +1,59 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    ':pinVersions',
+    ':prHourlyLimitNone',
+    ':separateMajorReleases',
+    ':automergePatch',
+    ':automergeDigest',
+    ':maintainLockFilesMonthly',
+    ':semanticCommits',
+    ':semanticCommitScopeDisabled',
+  ],
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/.*\\.Dockerfile$/',
+        '/.*\\.sh/',
+      ],
+      matchStrings: [
+        'datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\s(ENV )?\\w+?_(version|VERSION)(:|=)\\s?"?\'?(?<currentValue>[^\'"\\s]+)',
+      ],
+      versioningTemplate: '{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}',
+    },
+  ],
+  packageRules: [
+    {
+      // nuget updates need 'bump' to behave correctly
+      // https://github.com/renovatebot/renovate/discussions/34469#discussioncomment-12438713
+      matchManagers: [
+        'nuget',
+      ],
+      rangeStrategy: 'bump',
+    },
+    {
+      groupName: 'NLog',
+      matchPackageNames: [
+        'NLog{/,}**',
+      ],
+    },
+    {
+      groupName: '.NET Core',
+      matchUpdateTypes: [
+        'digest',
+        'patch',
+        'minor',
+        'major',
+      ],
+      matchPackageNames: [
+        'mcr.microsoft.com/dotnet/{/,}**',
+        'Microsoft.{/,}**',
+        'dotnet{/,}**',
+        'System.Configuration{/,}**',
+        'System.Text{/,}**',
+      ],
+    },
+  ],
+}

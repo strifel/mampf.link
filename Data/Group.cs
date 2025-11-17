@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GroupOrder.Data;
@@ -6,7 +7,7 @@ namespace GroupOrder.Data;
 using System.ComponentModel;
 
 [Index(nameof(GroupSlug), IsUnique = true)]
-public class Group
+public partial class Group
 {
     public int Id { get; set; }
 
@@ -91,11 +92,19 @@ public class Group
                 $"EUR{Order.GetPrice(person.GetPriceToPay())}", // Amount
                 "", // Purpose (DTA)
                 "", // Remittance Reference (ISO 11649 RF)
-                $"{GroupName} ({person.Name})", // Remittance Text
+                TransactionDescription(person), // Remittance Text
                 "", // Information
             ]
         );
     }
+
+    [GeneratedRegex(@"[^a-zA-Z0-9\/?:().,'+\- ]")]
+    private static partial Regex TransactionDescriptionDisallowedCharacters(); // see https://www.europeanpaymentscouncil.eu/document-library/guidance-documents/sepa-requirements-extended-character-set-unicode-subset-best
+
+    private string TransactionDescription(Person person) =>
+        TransactionDescriptionDisallowedCharacters().Replace($"{GroupName} ({person.Name})", "")[..140];
+
+
 }
 
 public enum PaymentType
